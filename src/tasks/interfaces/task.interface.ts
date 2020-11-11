@@ -1,12 +1,13 @@
 export interface ITask {
-  id: string,
-  categoryId: string,
-  projectId: string,
-  groupId: string,
+  id?: string,
+  title: string,
   description: string,
   limitDate: Date,
   progress: number,
   memos: string[],
-  creator: string
-  pic: string
+  creator?: string,
+  pic: string,
+  categoryId: string,
+  projectId?: string,
+  groupId: string
 }

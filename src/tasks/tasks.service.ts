@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import {Injectable}from '@nestjs/common'
+import { HttpException, HttpStatus } from '@nestjs/common';
 import {ITask} from './interfaces/task.interface';
 
 @Injectable()
@@ -14,15 +15,41 @@ export class TasksService {
   }
 
   getTaskById(id: string): ITask {
-    return this.tasks.find(t => t.id = id);
+
+    const task =  this.tasks.find(t => t.id == id);
+
+    if (!task) {
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: "指定されたidではタスクを見つけられませんでした。"
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+
+    return task
   }
 
   updateTask(id: string, task:ITask) {
     const taskIndex = this.tasks.findIndex(t => t.id = id);
-    this.tasks[taskIndex] = task;
+    let identifiedTask = this.tasks[taskIndex];
+
+    if (!identifiedTask) {
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: "指定されたidではタスクを見つけられませんでした。"
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+
+    this.tasks[taskIndex] = task
+
+    // return {
+    //   message: "更新に成功しました。",
+    //   task: this.tasks[taskIndex]
+    // }
   }
 
-  deleteTask(id: string): void {
+  deleteTask(id: string): string {
     this.tasks.filter(t => t.id != id);
+
+    return "削除しました。"
   }
 }

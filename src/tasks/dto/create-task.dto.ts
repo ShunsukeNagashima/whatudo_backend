@@ -1,23 +1,24 @@
 export class CreateTaskDto {
   id: string;
-  categoryId: string;
-  projectId: string;
-  groupId: string;
+  title: string;
   description: string;
   limitDate: Date;
   progress: number;
   memos: string[];
   creator: string;
   pic: string;
-}
-
-export class UpdateTasksDto {
   categoryId: string;
   projectId: string;
   groupId: string;
+}
+
+export class UpdateTasksDto {
+  title: string;
   description: string;
   limitDate: Date;
   progress: number;
+  categoryId: string;
+  groupId: string;
   memos: string[];
   pic: string;
 }

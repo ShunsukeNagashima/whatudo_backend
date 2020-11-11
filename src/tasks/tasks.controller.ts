@@ -19,7 +19,7 @@ export class TasksController {
 
   @Post()
   @HttpCode(201)
-  async createTask(@Body createTaskDto: CreateTaskDto) {
+  async createTask(@Body() createTaskDto: CreateTaskDto) {
     this.taskService.createTask(createTaskDto);
   }
 
@@ -29,14 +29,14 @@ export class TasksController {
   }
 
   @Get(':id')
-  getTasksById(@Param('id') id: string): ITask {
+  async getTasksById(@Param('id') id:string): Promise<ITask> {
     return this.taskService.getTaskById(id);
   }
 
-  // @Patch('/:id')
-  // updateTask(@Param('id') id: string, @Body() updateTasksDto: UpdateTasksDto): void {
-  //   this.taskService.updateTask(id, updateTasksDto)
-  // }
+  @Patch('/:id')
+  updateTask(@Param('id') id: string, @Body() updateTasksDto: UpdateTasksDto): void {
+    this.taskService.updateTask(id, updateTasksDto)
+  }
 
   @Delete('/:id')
   deleteTask(@Param('id') id: string): void {
