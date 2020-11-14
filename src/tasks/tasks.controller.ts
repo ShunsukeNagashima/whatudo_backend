@@ -13,33 +13,33 @@ import { CreateTaskDto, UpdateTasksDto } from './dto/create-task.dto';
 import { TasksService } from './tasks.service'
 
 
-@Controller('tasks')
+@Controller('api/tasks')
 export class TasksController {
-  constructor(private taskService: TasksService){}
+  constructor(private tasksService: TasksService){}
 
   @Post()
   @HttpCode(201)
   async createTask(@Body() createTaskDto: CreateTaskDto) {
-    this.taskService.createTask(createTaskDto);
+    this.tasksService.createTask(createTaskDto);
   }
 
   @Get()
   async getTasks(): Promise<ITask[]> {
-    return this.taskService.getTasks()
+    return this.tasksService.getTasks()
   }
 
   @Get(':id')
   async getTasksById(@Param('id') id:string): Promise<ITask> {
-    return this.taskService.getTaskById(id);
+    return this.tasksService.getTaskById(id);
   }
 
   @Patch('/:id')
   updateTask(@Param('id') id: string, @Body() updateTasksDto: UpdateTasksDto): void {
-    this.taskService.updateTask(id, updateTasksDto)
+    this.tasksService.updateTask(id, updateTasksDto)
   }
 
   @Delete('/:id')
   deleteTask(@Param('id') id: string): void {
-    this.taskService.deleteTask(id);
+    this.tasksService.deleteTask(id);
   }
 }

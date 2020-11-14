@@ -30,7 +30,7 @@ export class TasksService {
   }
 
   updateTask(id: string, task:ITask) {
-    const taskIndex = this.tasks.findIndex(t => t.id = id);
+    const taskIndex = this.tasks.findIndex(t => t.id == id);
     let identifiedTask = this.tasks[taskIndex];
 
     if (!identifiedTask) {
