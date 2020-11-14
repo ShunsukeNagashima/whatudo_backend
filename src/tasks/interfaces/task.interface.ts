@@ -6,8 +6,11 @@ export interface ITask {
   progress: number,
   memos: string[],
   creator?: string,
+  modifiedBy?: string[],
   pic: string,
   categoryId: string,
   projectId?: string,
-  groupId: string
+  groupId: string,
+  createdAt?: Date,
+  updatedAt?: Date
 }

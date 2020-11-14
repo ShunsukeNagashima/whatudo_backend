@@ -2,6 +2,7 @@ import {Injectable}from '@nestjs/common'
 import { HttpException, HttpStatus } from '@nestjs/common';
 import {ITask} from './interfaces/task.interface';
 
+
 @Injectable()
 export class TasksService {
   private readonly tasks: ITask[] = [];
@@ -40,11 +41,6 @@ export class TasksService {
     }
 
     this.tasks[taskIndex] = task
-
-    // return {
-    //   message: "更新に成功しました。",
-    //   task: this.tasks[taskIndex]
-    // }
   }
 
   deleteTask(id: string): string {
