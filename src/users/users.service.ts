@@ -1,37 +1,65 @@
+import { Model } from 'mongoose'
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { IUser } from './interface/user.interface';
+import { InjectModel } from '@nestjs/mongoose';
+import { User, UserDocument } from './schemas/users.schema';
+import { CreateUserDto } from './dto/user.dto';
 
 @Injectable()
 export class UsersService {
-  private readonly users: IUser[] = [];
+  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>){}
 
-  signup(user: IUser) {
-    this.users.push(user);
+  async signup(user: CreateUserDto) {
+    const createdUser = new this.userModel(user)
+
+    try {
+      return createdUser.save()
+    } catch(err) {
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: "ユーザーの作成に失敗しました。"
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
+    }
   }
 
-  login(email: string, password: string) {
+  async login(email: string, password: string) {
 
-    const existingUser = this.users.find(u => u.email == email);
+    let existingUser: UserDocument;
 
-    if (!existingUser) {
+    try {
+      existingUser = await this.userModel.findOne({ email })
+    } catch(err) {
       throw new HttpException({
         status: HttpStatus.UNAUTHORIZED,
         error: 'ログインに失敗しました。もう一度お試しください。'
       }, HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+
+    if (!existingUser) {
+      throw new HttpException({
+        status: HttpStatus.UNAUTHORIZED,
+        error: 'ユーザー名またはパスワードが間違っています。'
+      }, HttpStatus.UNAUTHORIZED)
     }
 
     if (existingUser.password != password) {
       throw new HttpException({
         status: HttpStatus.UNAUTHORIZED,
-        error: 'ログインに失敗しました。もう一度お試しください。'
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+        error: 'ユーザー名またはパスワードが間違っています。'
+      }, HttpStatus.UNAUTHORIZED)
     }
 
-    console.log('ログインに成功しました。')
+   return 'ログインに成功しました。'
   }
 
-  getUsers(): IUser[] {
-    return this.users;
+  async getUsers(): Promise<User[]> {
+    try {
+      return this.userModel.find().exec()
+    } catch(err) {
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: "ユーザーの取得に失敗しました。"
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
+    }
   }
 
 }

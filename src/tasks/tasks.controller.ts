@@ -8,8 +8,8 @@ import {
   Param,
   Body
 } from '@nestjs/common';
-import { ITask } from './interfaces/task.interface'
-import { CreateTaskDto, UpdateTasksDto } from './dto/create-task.dto';
+import { Task } from './schemas/tasks.schema';
+import { CreateTaskDto, UpdateTasksDto } from './dto/task.dto';
 import { TasksService } from './tasks.service'
 
 
@@ -24,12 +24,12 @@ export class TasksController {
   }
 
   @Get()
-  async getTasks(): Promise<ITask[]> {
+  async getTasks(): Promise<Task[]> {
     return this.tasksService.getTasks()
   }
 
   @Get(':id')
-  async getTasksById(@Param('id') id:string): Promise<ITask> {
+  async getTasksById(@Param('id') id:string): Promise<Task> {
     return this.tasksService.getTaskById(id);
   }
 
