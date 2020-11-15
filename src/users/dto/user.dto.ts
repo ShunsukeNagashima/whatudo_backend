@@ -1,5 +1,4 @@
 import { IsNotEmpty, IsEmail, MinLength } from 'class-validator'
-import { ITask } from 'src/tasks/interfaces/task.interface';
 
 export class CreateUserDto {
   id: string;
@@ -11,7 +10,7 @@ export class CreateUserDto {
   @IsNotEmpty()
   @MinLength(6)
   password: string;
-  tasks: ITask[]
+  tasks: string[]
 }
 
 export class LoginUserDto {

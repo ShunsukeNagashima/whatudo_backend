@@ -3,7 +3,7 @@ import {Injectable}from '@nestjs/common'
 import {InjectModel} from '@nestjs/mongoose'
 import {Task, TaskDocument} from './schemas/tasks.schema';
 import {HttpException, HttpStatus} from '@nestjs/common';
-import {CreateTaskDto, UpdateTasksDto} from './dto/task.dto';
+import {CreateTaskDto, UpdateTaskDto} from './dto/task.dto';
 
 
 @Injectable()
@@ -56,13 +56,16 @@ export class TasksService {
     return task
   }
 
-  async updateTask(id: string, updateTaskDto:UpdateTasksDto) {
+  async updateTask(id: string, updateTaskDto:UpdateTaskDto) {
     let task: TaskDocument
 
     try {
       task = await this.taskModel.findById(id);
     } catch(err){
-
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: "エラーが発生しました。タスクを見つけられませんでした。"
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
     if (!task) {
@@ -76,7 +79,7 @@ export class TasksService {
     task.description = updateTaskDto.description
     task.limitDate = updateTaskDto.limitDate
     task.progress = updateTaskDto.progress
-    task.memos = updateTaskDto.memos
+    task.comments = updateTaskDto.comments
     task.modifiedBy = updateTaskDto.modifiedBy
     task.pic = updateTaskDto.pic
     task.categoryId = updateTaskDto.categoryId

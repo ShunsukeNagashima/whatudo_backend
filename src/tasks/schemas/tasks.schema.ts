@@ -17,8 +17,11 @@ export class Task {
     @Prop()
     progress: number;
 
+    @Prop()
+    status: string;
+
     @Prop({ type: [Types.ObjectId]})
-    memos: string[];
+    comments: string[];
 
     @Prop({ref: 'User'})
     creator: string;

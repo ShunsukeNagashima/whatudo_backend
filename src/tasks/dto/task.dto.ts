@@ -6,7 +6,7 @@ export class CreateTaskDto {
   description: string;
   limitDate: Date;
   progress: number;
-  memos: string[];
+  comments: string[];
   @IsNotEmpty()
   creator: string;
   pic: string;
@@ -17,13 +17,13 @@ export class CreateTaskDto {
   createdAt: Date
 }
 
-export class UpdateTasksDto {
+export class UpdateTaskDto {
   @IsNotEmpty()
   title: string;
   description: string;
   limitDate: Date;
   progress: number;
-  memos: string[];
+  comments: string[];
   modifiedBy: string[];
   pic: string;
   categoryId: string;
