@@ -32,7 +32,7 @@ export class ProjectsService {
     }
   }
 
-  async deleteProject(id: string) {
+ async deleteProject(id: string) {
     let project: ProjectDocument
     try {
       project = await this.projectModel.findById(id)
@@ -53,6 +53,5 @@ export class ProjectsService {
     }
 
   }
-
 
 }
