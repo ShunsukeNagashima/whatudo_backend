@@ -1,18 +1,21 @@
 import { Controller, Post, Request, UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { Request as Req } from 'express'
-import { User } from './users/schemas/users.schema';
+import { UserDocument } from './users/schemas/users.schema';
+import { LocalAuthGuard } from './auth/local-auth.guard';
+import { AuthService } from './auth/auth.service';
 
 interface AuthInfoRequest extends Req {
-  user: User
+  user: UserDocument
 }
 
 @Controller()
 export class AppController {
-  @UseGuards(AuthGuard('local'))
+  constructor(private authService: AuthService) {}
+
+  @UseGuards(LocalAuthGuard)
   @Post('/api/auth/login')
   async login(@Request() req: AuthInfoRequest) {
-    return req.user;
+    return this.authService.login(req.user);
   }
 
 }
