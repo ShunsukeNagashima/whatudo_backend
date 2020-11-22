@@ -12,8 +12,3 @@ export class CreateUserDto {
   password: string;
   tasks: string[]
 }
-
-export class LoginUserDto {
-  email: string;
-  password: string;
-}
