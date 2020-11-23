@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -12,6 +13,9 @@ import { CategoriesModule } from './categories/categories.module'
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      envFilePath: '.development.env'
+    }),
     PassportModule.register({ defaultStrategy: 'jwt '}),
     TasksModule,
     UsersModule,
@@ -19,7 +23,7 @@ import { CategoriesModule } from './categories/categories.module'
     ProjectsModule,
     CategoriesModule,
     AuthModule,
-    MongooseModule.forRoot('mongodb+srv://dbUser:3QlVsufoUc2K4hAk@cluster0.hekpb.mongodb.net/whatudo?retryWrites=true&w=majority'),
+    MongooseModule.forRoot(`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.hekpb.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`),
   ],
   controllers: [AppController],
   providers: [AppService],
