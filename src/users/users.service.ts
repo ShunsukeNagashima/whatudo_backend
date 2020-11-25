@@ -1,5 +1,5 @@
 import { Model } from 'mongoose'
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { hash } from 'bcryptjs'
 
@@ -16,27 +16,18 @@ export class UsersService {
     try {
       existingUser = await this.userModel.findOne({email: user.email})
     } catch(err) {
-      throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: "サインアップに失敗しました。"
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+      return Promise.reject(new Error('signup failed'))
     }
 
     if (existingUser) {
-      throw new HttpException({
-        status: HttpStatus.UNPROCESSABLE_ENTITY,
-        error: 'すでに存在します。ログインしてください。'
-      }, HttpStatus.UNPROCESSABLE_ENTITY)
+      return Promise.reject(new Error('already exists'))
     }
 
     let hashedPassword;
     try {
       hashedPassword = await hash(user.password, 12)
     } catch(err) {
-      throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: "サインアップに失敗しました。"
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+      return Promise.reject(new Error('signup failed'))
     }
 
     user.password = hashedPassword
@@ -45,10 +36,7 @@ export class UsersService {
     try {
       return createdUser.save()
     } catch(err) {
-      throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: "サインアップに失敗しました。"
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+      return Promise.reject(new Error('signup failed'))
     }
   }
 
@@ -56,10 +44,15 @@ export class UsersService {
     try {
       return this.userModel.findOne({email}).exec()
     } catch(err) {
-      throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: "ユーザーの取得に失敗しました。"
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+      return Promise.reject(new Error('could not find a user'))
+    }
+  }
+
+  async findUserById(id: string) : Promise<UserDocument> {
+    try {
+      return this.userModel.findById(id).exec()
+    } catch(err) {
+      return Promise.reject(new Error('could not find a user'))
     }
   }
 

@@ -7,13 +7,11 @@ export class CreateTaskDto {
   limitDate: Date;
   progress: number;
   comments: string[];
-  @IsNotEmpty()
   creator: string;
   pic: string;
   categoryId: string;
   projectId: string;
   groupId: string;
-  @IsNotEmpty()
   createdAt: Date
 }
 

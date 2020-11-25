@@ -1,7 +1,7 @@
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Group, GroupDocument } from './schemas/groups.schema'
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateGroupDto } from './dto/groups.dto';
 
 @Injectable()
@@ -13,10 +13,7 @@ export class GroupsService {
     try {
       return createdGroup.save()
     } catch(err) {
-      throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: 'グループの作成に失敗しました。'
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+      return Promise.reject(new Error('create failed'))
     }
   }
 
@@ -24,31 +21,22 @@ export class GroupsService {
     try {
       return this.groupModel.find().exec()
     } catch(err) {
-      throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: 'グループの取得に失敗しました。'
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+      return Promise.reject(new Error('could not find a group'))
     }
   }
 
-  async deleteGroup(id: string) {
+  async deleteGroup(id: string): Promise<void> {
     let group: GroupDocument
     try {
       group = await this.groupModel.findById(id)
     } catch(err){
-      throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: "エラーが発生しました。グループを見つけられませんでした。"
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+      return Promise.reject(new Error('could not find a group'))
     }
 
     try {
-      group.remove()
+      await group.remove()
     } catch(err) {
-      throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: "グループの削除に失敗しました。"
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+      return Promise.reject(new Error('delete failed'));
     }
   }
 }

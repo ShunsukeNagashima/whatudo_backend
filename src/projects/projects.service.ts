@@ -14,10 +14,7 @@ export class ProjectsService {
     try {
       return createdProject.save()
     } catch(err) {
-      throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: "プロジェクトの作成に失敗しました。"
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+      return Promise.reject(new Error('create failed'))
     }
   }
 
@@ -25,33 +22,23 @@ export class ProjectsService {
     try {
       return this.projectModel.find().exec()
     }catch(err) {
-      throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: "プロジェクトの取得に失敗しました。"
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+      return Promise.reject(new Error('could not find a project'))
     }
   }
 
- async deleteProject(id: string) {
+ async deleteProject(id: string): Promise<void> {
     let project: ProjectDocument
     try {
       project = await this.projectModel.findById(id)
     } catch(err){
-      throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: "エラーが発生しました。プロジェクトを見つけられませんでした。"
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+      return Promise.reject(new Error('could not find a project'));
     }
 
     try {
       project.remove()
     } catch(err) {
-      throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: "プロジェクトの削除に失敗しました。"
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+      return Promise.reject(new Error('delete failed'));
     }
-
   }
 
 }

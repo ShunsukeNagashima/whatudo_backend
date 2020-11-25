@@ -2,7 +2,6 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { CategoryDocument, Category } from './schemas/categories.schema';
 import { CreateCategoryDto } from './dto/categories.dto';
-import { HttpStatus, HttpException } from '@nestjs/common';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
@@ -15,10 +14,7 @@ export class CategoriesService {
     try {
       return createdCategory.save()
     } catch(err) {
-        throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: "カテゴリを作成できませんでした。再度お試しください。"
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+      return Promise.reject(new Error('create failed'))
     }
   }
 
@@ -26,31 +22,26 @@ export class CategoriesService {
     try {
       return this.categoryModel.find().exec()
     }catch(err) {
-      throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: "カテゴリの取得に失敗しました。"
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+      return Promise.reject(new Error('could not find a category'))
     }
   }
 
-  async deleteCateory(id: string) {
+  async deleteCateory(id: string) :Promise<void>{
     let category: CategoryDocument
     try {
       category = await this.categoryModel.findById(id)
     } catch(err){
-      throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: "エラーが発生しました。カテゴリを見つけられませんでした。"
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+      return Promise.reject(new Error('could not find a category'))
+    }
+
+    if (!category) {
+      return Promise.reject(new Error('could not find a category'))
     }
 
     try {
-      category.remove()
+      await category.remove()
     } catch(err) {
-      throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: "カテゴリの削除に失敗しました。"
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+      return Promise.reject(new Error('delete failed'))
     }
 
   }

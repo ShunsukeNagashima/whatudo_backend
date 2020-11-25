@@ -2,23 +2,27 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Comment, CommentDocument } from './schemas/comments.schema';
 import { CreateCommetnDto, UpdateCommentDto } from './dto/comments.dto';
-import { HttpException, HttpStatus } from '@nestjs/common';
 import { Injectable } from '@nestjs/common';
+import { TaskDocument } from '../tasks/schemas/tasks.schema';
+import { UserDocument } from '../users/schemas/users.schema';
 
 @Injectable()
 export class CommentsService {
   constructor(@InjectModel(Comment.name) private commentModel: Model<CommentDocument>){}
 
-  async createComment(createCommentDto: CreateCommetnDto) {
+  async createComment(createCommentDto: CreateCommetnDto, task: TaskDocument, user: UserDocument): Promise<void> {
     const createdComment = new this.commentModel(createCommentDto);
 
     try {
-      return createdComment.save()
+      const sess = await this.commentModel.db.startSession()
+      sess.startTransaction()
+      await createdComment.save({ session: sess });
+      task.modifiedBy.push(user.id);
+      task.comments.push(createdComment.id);
+      await task.save({ session: sess });
+      await sess.commitTransaction();
     } catch(err) {
-        throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: "タスクを作成できませんでした。再度お試しください。"
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+      return Promise.reject(new Error('create comment failed'))
     }
   };
 
@@ -28,29 +32,35 @@ export class CommentsService {
     try {
       comment = await this.commentModel.findById(id)
     } catch(err) {
-      throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: "エラーが発生しました。コメントを見つけられませんでした。"
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+      return Promise.reject(new Error('could not find a comment'))
     }
 
     if(!comment) {
-      throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: "指定されたidではコメントを見つけられませんでした。"
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+      return Promise.reject(new Error('could not find a comment'))
     }
 
     comment.title = updateCommentdto.title;
     comment.detail = updateCommentdto.detail;
 
     try {
-      comment.save()
+      return comment.save()
     } catch(err) {
-      throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: "コメントの更新に失敗しました。"
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+      return Promise.reject(new Error('update comment failed'))
+    }
+  }
+
+  async deleteComment(id: string): Promise<void> {
+    let comment: CommentDocument
+    try {
+      comment = await this.commentModel.findById(id)
+    } catch(err){
+      return Promise.reject(new Error('could not find a comment'));
+    }
+
+    try {
+      comment.remove()
+    } catch(err) {
+      return Promise.reject(new Error('delete comment failed'));
     }
   }
 }

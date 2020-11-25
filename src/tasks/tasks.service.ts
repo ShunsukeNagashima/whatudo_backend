@@ -1,57 +1,51 @@
-import {Model} from 'mongoose';
-import {Injectable}from '@nestjs/common'
-import {InjectModel} from '@nestjs/mongoose'
-import {Task, TaskDocument} from './schemas/tasks.schema';
-import {HttpException, HttpStatus} from '@nestjs/common';
-import {CreateTaskDto, UpdateTaskDto} from './dto/task.dto';
-
+import { Model }  from 'mongoose';
+import { Injectable }from '@nestjs/common'
+import { InjectModel } from '@nestjs/mongoose'
+import { Task, TaskDocument } from './schemas/tasks.schema';
+import { CreateTaskDto, UpdateTaskDto } from './dto/task.dto';
+import { UserDocument } from '../users/schemas/users.schema';
 
 @Injectable()
 export class TasksService {
   constructor(@InjectModel(Task.name) private taskModel: Model<TaskDocument>){}
 
-  async createTask(createTaskDto: CreateTaskDto){
+  async createTask(createTaskDto: CreateTaskDto, user: UserDocument): Promise<void>{
+    createTaskDto.creator = user.id
+    createTaskDto.createdAt = new Date()
+
     const createdTask = new this.taskModel(createTaskDto);
 
     try {
-      return createdTask.save();
+      const sess = await this.taskModel.db.startSession();
+      sess.startTransaction();
+      await createdTask.save({ session: sess });
+      user.tasks.push(createdTask.id)
+      await user.save({ session: sess });
+      await sess.commitTransaction();
     } catch(err) {
-      throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: "タスクを作成できませんでした。再度お試しください。"
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+      return Promise.reject(new Error('create failed'))
     }
   }
 
-
-  async getTasks(): Promise<Task[]> {
+  async getTasks(): Promise<TaskDocument[]> {
     try {
       return this.taskModel.find().exec()
     } catch(err) {
-      throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: "タスクの取得に失敗しました。"
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+      return Promise.reject(new Error('could not find a task'))
     }
   }
 
-  async getTaskById(id: string): Promise<Task> {
+  async getTaskById(id: string): Promise<TaskDocument> {
 
-    let task: Promise<TaskDocument>;
+    let task: TaskDocument;
     try {
-      task =  this.taskModel.findById(id).exec()
+      task =  await this.taskModel.findById(id).exec()
     } catch(err) {
-      throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: "エラーが発生しました。タスクを見つけられませんでした。"
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+      return Promise.reject(new Error('could not find a task'))
     }
 
     if (!task) {
-      throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: "指定されたidではタスクを見つけられませんでした。"
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+      return Promise.reject(new Error('could not find a task'))
     }
     return task
   }
@@ -62,17 +56,11 @@ export class TasksService {
     try {
       task = await this.taskModel.findById(id);
     } catch(err){
-      throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: "エラーが発生しました。タスクを見つけられませんでした。"
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+      return Promise.reject(new Error('could not find a task'))
     }
 
     if (!task) {
-      throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: "指定されたidではタスクを見つけられませんでした。"
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+      return Promise.reject(new Error('could not find a task'))
     }
 
     task.title = updateTaskDto.description
@@ -87,12 +75,9 @@ export class TasksService {
     task.updatedAt = updateTaskDto.updatedAt
 
     try {
-      task.save()
+      return task.save()
     } catch(err) {
-      throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: "タスクの更新に失敗しました。"
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+      return Promise.reject(new Error('failed update'))
     }
   }
 
@@ -102,23 +87,17 @@ export class TasksService {
     try {
      task = await this.taskModel.findById(id);
     } catch(err){
-
+      return Promise.reject(new Error('could not find a task'))
     }
 
     if (!task) {
-      throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: "指定されたidではタスクを見つけられませんでした。"
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+      return Promise.reject(new Error('could not find a task'))
     }
 
     try {
-      task.remove()
+      return task.remove()
     } catch(err) {
-      throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: "タスクの削除に失敗しました。"
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+      return Promise.reject(new Error('delete failed'))
     }
   }
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Get, Param, HttpException, HttpStatus } from '@nestjs/common';
 import { CreateUserDto } from './dto/user.dto';
 import { UsersService } from './users.service';
 
@@ -8,7 +8,35 @@ export class UsersController {
 
   @Post('/signup')
   async signup(@Body() createUserDto: CreateUserDto){
-    this.userService.signup(createUserDto);
+    try {
+      await this.userService.signup(createUserDto)
+    } catch(err) {
+      if (err.message === 'signup failed') {
+        throw new HttpException({
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'サインアップに失敗しました。再度お試しください。'
+        }, HttpStatus.INTERNAL_SERVER_ERROR)
+      } else if(err.message === 'already exists') {
+        throw new HttpException({
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          error: 'ユーザーは既に存在します。ログインしてください。'
+        }, HttpStatus.UNPROCESSABLE_ENTITY)
+      }
+    }
+  }
+
+  @Get(':id')
+  async findUserById(@Param('id') id: string ) {
+    try {
+      await this.userService.findUserById(id);
+    } catch(err) {
+      if (err.message === 'could not find a user') {
+        throw new HttpException({
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'ユーザーの取得に失敗しました。'
+        }, HttpStatus.INTERNAL_SERVER_ERROR)
+      }
+    }
   }
 
 }
