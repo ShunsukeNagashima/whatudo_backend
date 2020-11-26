@@ -1,4 +1,4 @@
-import { Controller, Post, Patch,  Body, Param, HttpCode, UseGuards, HttpException, HttpStatus, Delete, Req } from '@nestjs/common';
+import { Controller, Post, Patch,  Body, Param, HttpCode, UseGuards, HttpException, HttpStatus, Delete, Req, Get, Query } from '@nestjs/common';
 import { CreateCommetnDto, UpdateCommentDto } from './dto/comments.dto';
 import { CommentsService } from './comments.service';
 import { TasksService } from '../tasks/tasks.service';
@@ -19,7 +19,7 @@ export class CommentsController {
 
   @Post()
   @HttpCode(201)
-  async createComment(@Body() createCommentDto: CreateCommetnDto, taskId: string, @Req() req: IUserInfo) {
+  async createComment(@Body() createCommentDto: CreateCommetnDto, @Query('taskId') taskId: string, @Req() req: IUserInfo) {
     let task: TaskDocument;
     let user: UserDocument;
 
@@ -51,10 +51,36 @@ export class CommentsController {
     }
   }
 
+  @Get()
+  async getComments() {
+    try {
+      await this.commentsService.getComments()
+    } catch(err) {
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: 'コメントの取得に失敗しました。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  }
+
   @Patch('/:id')
   @HttpCode(201)
   async updateComment(@Param('id') id: string, @Body() updateCommentDto: UpdateCommentDto){
-    this.commentsService.updateComment(id, updateCommentDto)
+    try {
+      this.commentsService.updateComment(id, updateCommentDto)
+    } catch(err) {
+      if (err.message === 'could not find a comment') {
+        throw new HttpException({
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'コメントの取得に失敗ました。'
+        }, HttpStatus.INTERNAL_SERVER_ERROR)
+      } else if(err.message === 'update comment failed') {
+        throw new HttpException({
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'コメントの更新に失敗しました。'
+        }, HttpStatus.INTERNAL_SERVER_ERROR)
+      }
+    }
   }
 
   @Delete(':id')
@@ -67,7 +93,7 @@ export class CommentsController {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: 'コメントの取得に失敗しました。'
         }, HttpStatus.INTERNAL_SERVER_ERROR)
-      } else if(err.message === 'delete failed') {
+      } else if(err.message === 'delete comment failed') {
         throw new HttpException({
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: 'コメントの削除に失敗しました。'

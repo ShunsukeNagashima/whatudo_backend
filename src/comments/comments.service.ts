@@ -26,6 +26,14 @@ export class CommentsService {
     }
   };
 
+  async getComments() {
+    try {
+      return this.commentModel.find().exec
+    } catch(err) {
+      return Promise.reject(new Error('get comments failed'))
+    }
+  }
+
   async updateComment(id: string, updateCommentdto :UpdateCommentDto) {
     let comment: CommentDocument
 

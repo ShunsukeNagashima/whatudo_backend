@@ -48,7 +48,7 @@ export class GroupsController {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: 'グループの削除に失敗しました。'
         }, HttpStatus.INTERNAL_SERVER_ERROR)
+      }
     }
   }
-
 }

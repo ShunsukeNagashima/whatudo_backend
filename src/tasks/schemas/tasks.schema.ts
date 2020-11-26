@@ -48,4 +48,4 @@ export class Task {
     updatedAt: Date
 }
 
-export const TaskShcema = SchemaFactory.createForClass(Task)
+export const TaskSchema = SchemaFactory.createForClass(Task)

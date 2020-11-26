@@ -1,5 +1,5 @@
 import { Model } from 'mongoose';
-import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Project, ProjectDocument } from './schemas/projects.schema';
 import { CreateProjectDto } from './dto/projects.dto';
