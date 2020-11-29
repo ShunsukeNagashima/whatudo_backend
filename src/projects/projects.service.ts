@@ -14,7 +14,7 @@ export class ProjectsService {
     try {
       return createdProject.save()
     } catch(err) {
-      return Promise.reject(new Error('create failed'))
+      return Promise.reject(new Error('create project failed'))
     }
   }
 
@@ -22,7 +22,7 @@ export class ProjectsService {
     try {
       return this.projectModel.find().exec()
     }catch(err) {
-      return Promise.reject(new Error('could not find a project'))
+      return Promise.reject(new Error('could not gett projects'))
     }
   }
 
@@ -37,7 +37,15 @@ export class ProjectsService {
     try {
       project.remove()
     } catch(err) {
-      return Promise.reject(new Error('delete failed'));
+      return Promise.reject(new Error('delete project failed'));
+    }
+  }
+
+  async findProjectsById(id: string) {
+    try {
+      return this.projectModel.findById(id).exec()
+    } catch(err) {
+      return Promise.reject(new Error('could not find a project'))
     }
   }
 

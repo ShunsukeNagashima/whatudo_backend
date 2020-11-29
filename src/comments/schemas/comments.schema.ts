@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types, Document } from 'mongoose';
+import { UserDocument } from '../../users/schemas/users.schema';
 
 export type CommentDocument = Comment & Document
 
@@ -12,7 +13,10 @@ export class Comment {
   detail: string;
 
   @Prop({ type: Types.ObjectId, ref: 'User'})
-  creator: string;
+  creator: UserDocument;
+
+  @Prop({ type: Types.ObjectId, ref: 'Task'})
+  taskId: Types.ObjectId
 }
 
 export const CommentSchema = SchemaFactory.createForClass(Comment)

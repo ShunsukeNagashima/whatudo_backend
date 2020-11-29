@@ -4,12 +4,18 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Task, TaskDocument } from './schemas/tasks.schema';
 import { CreateTaskDto, UpdateTaskDto } from './dto/task.dto';
 import { UserDocument } from '../users/schemas/users.schema';
+import { ObjectId } from 'mongodb';
+import { Comment, CommentDocument } from '../comments/schemas/comments.schema';
+import { ProjectDocument } from '../projects/schemas/projects.schema';
 
 @Injectable()
 export class TasksService {
-  constructor(@InjectModel(Task.name) private taskModel: Model<TaskDocument>){}
+  constructor(
+    @InjectModel(Task.name) private taskModel: Model<TaskDocument>,
+    @InjectModel(Comment.name) private commentModel: Model<CommentDocument>
+    ){}
 
-  async createTask(createTaskDto: CreateTaskDto, user: UserDocument): Promise<void>{
+  async createTask(createTaskDto: CreateTaskDto, user: UserDocument, project: ProjectDocument): Promise<void>{
     createTaskDto.creator = user.id
     createTaskDto.createdAt = new Date()
 
@@ -21,6 +27,8 @@ export class TasksService {
       await createdTask.save({ session: sess });
       user.tasks.push(createdTask.id)
       await user.save({ session: sess });
+      project.tasks.push(createdTask.id)
+      await project.save({ session: sess });
       await sess.commitTransaction();
     } catch(err) {
       return Promise.reject(new Error('create failed'))
@@ -67,8 +75,6 @@ export class TasksService {
     task.description = updateTaskDto.description
     task.limitDate = updateTaskDto.limitDate
     task.progress = updateTaskDto.progress
-    task.comments = updateTaskDto.comments
-    task.modifiedBy = updateTaskDto.modifiedBy
     task.pic = updateTaskDto.pic
     task.categoryId = updateTaskDto.categoryId
     task.groupId = updateTaskDto.groupId
@@ -81,11 +87,11 @@ export class TasksService {
     }
   }
 
-  async deleteTask(id: string) {
+  async deleteTask(id: string): Promise<void> {
     let task: TaskDocument
 
     try {
-     task = await this.taskModel.findById(id);
+     task = await this.taskModel.findById(id).populate('creator').populate('projectId');
     } catch(err){
       return Promise.reject(new Error('could not find a task'))
     }
@@ -95,9 +101,17 @@ export class TasksService {
     }
 
     try {
-      return task.remove()
+      const sess = await this.taskModel.db.startSession()
+      sess.startTransaction()
+      await this.taskModel.deleteOne({_id: new ObjectId(task.id)},{session: sess})
+      task.creator.tasks.pull(task)
+      await task.creator.save({ session: sess });
+      task.projectId.tasks.pull(task)
+      await task.projectId.save({ session: sess});
+      await this.commentModel.deleteMany({taskId: new ObjectId(task.id)});
+      await sess.commitTransaction();
     } catch(err) {
-      return Promise.reject(new Error('delete failed'))
+      return Promise.reject(new Error('delete task failed'))
     }
   }
 }

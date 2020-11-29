@@ -17,6 +17,7 @@ import { TasksService } from '../tasks/tasks.service';
     ])
   ],
   controllers: [CommentsController],
-  providers: [CommentsService, UsersService, TasksService]
+  providers: [CommentsService, UsersService, TasksService],
+  exports: [CommentsService]
 })
 export class CommentsModule {}

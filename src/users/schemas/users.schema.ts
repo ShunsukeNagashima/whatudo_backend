@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types, Document } from 'mongoose';
+import { TaskDocument } from '../../tasks/schemas/tasks.schema'
 
 export type UserDocument = User & Document
 
@@ -14,8 +15,8 @@ export class User {
   @Prop({required: true})
   password: string;
 
-  @Prop({ type: [Types.ObjectId], ref: 'Task' })
-  tasks: Types.ObjectId[]
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Task' }]})
+  tasks: Types.Array<TaskDocument>
 }
 
 export const UserSchema = SchemaFactory.createForClass(User)

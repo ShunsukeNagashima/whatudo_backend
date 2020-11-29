@@ -1,5 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types, Document } from 'mongoose'
+import { UserDocument } from '../../users/schemas/users.schema';
+import { CommentDocument } from '../../comments/schemas/comments.schema'
+import { ProjectDocument } from '../../projects/schemas/projects.schema';
 
 export type TaskDocument = Task & Document
 
@@ -21,24 +24,24 @@ export class Task {
     status: string;
 
     @Prop({ type: [Types.ObjectId]})
-    comments: string[];
+    comments: Types.Array<CommentDocument>;
 
-    @Prop({ref: 'User'})
-    creator: string;
+    @Prop({ type: Types.ObjectId, ref: 'User'})
+    creator: UserDocument;
 
     @Prop({ type: [Types.ObjectId], ref: 'User'})
-    modifiedBy: string[]
+    modifiedBy: Types.Array<UserDocument>
 
-    @Prop()
+    @Prop({ type: Types.ObjectId, ref: 'User'})
     pic: string;
 
-    @Prop()
+    @Prop({ type: Types.ObjectId, ref: 'Category' })
     categoryId: string;
 
-    @Prop()
-    projectId: string;
+    @Prop({ type: Types.ObjectId, ref: 'Project'})
+    projectId: ProjectDocument
 
-    @Prop()
+    @Prop({ type: Types.ObjectId, ref: 'Group'})
     groupId: string;
 
     @Prop()

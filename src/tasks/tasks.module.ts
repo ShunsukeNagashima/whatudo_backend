@@ -5,15 +5,20 @@ import { Task, TaskSchema } from './schemas/tasks.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from '../users/schemas/users.schema';
 import { UsersService } from '../users/users.service';
+import { Comment, CommentSchema } from '../comments/schemas/comments.schema';
+import { ProjectsService } from '../projects/projects.service';
+import { Project, ProjectSchema } from '../projects/schemas/projects.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Task.name, schema: TaskSchema },
-      { name: User.name, schema: UserSchema}
+      { name: User.name, schema: UserSchema},
+      { name: Comment.name, schema: CommentSchema},
+      { name: Project.name, schema: ProjectSchema }
     ])
   ],
   controllers: [TasksController],
-  providers: [TasksService, UsersService]
+  providers: [TasksService, UsersService, ProjectsService]
 })
 export class TasksModule {}

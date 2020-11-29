@@ -1,5 +1,6 @@
 import { Body, Controller, Post, Get, Param, HttpException, HttpStatus } from '@nestjs/common';
 import { CreateUserDto } from './dto/user.dto';
+import { UserDocument } from './schemas/users.schema';
 import { UsersService } from './users.service';
 
 @Controller('api/users')
@@ -25,10 +26,10 @@ export class UsersController {
     }
   }
 
-  @Get(':id')
-  async findUserById(@Param('id') id: string ) {
+  @Get('/:id')
+  async findUserById(@Param('id') id: string ): Promise<UserDocument | void> {
     try {
-      await this.userService.findUserById(id);
+      return this.userService.findUserById(id);
     } catch(err) {
       if (err.message === 'could not find a user') {
         throw new HttpException({

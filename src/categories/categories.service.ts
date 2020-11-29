@@ -43,6 +43,5 @@ export class CategoriesService {
     } catch(err) {
       return Promise.reject(new Error('delete failed'))
     }
-
   }
 }

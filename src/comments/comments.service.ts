@@ -5,6 +5,8 @@ import { CreateCommetnDto, UpdateCommentDto } from './dto/comments.dto';
 import { Injectable } from '@nestjs/common';
 import { TaskDocument } from '../tasks/schemas/tasks.schema';
 import { UserDocument } from '../users/schemas/users.schema';
+import { ObjectId } from 'mongodb'
+import { ClientSession } from 'mongoose';
 
 @Injectable()
 export class CommentsService {
@@ -13,6 +15,8 @@ export class CommentsService {
   async createComment(createCommentDto: CreateCommetnDto, task: TaskDocument, user: UserDocument): Promise<void> {
     const createdComment = new this.commentModel(createCommentDto);
 
+    createdComment.taskId = task.id
+    createdComment.creator = user.id
     try {
       const sess = await this.commentModel.db.startSession()
       sess.startTransaction()
@@ -69,6 +73,14 @@ export class CommentsService {
       comment.remove()
     } catch(err) {
       return Promise.reject(new Error('delete comment failed'));
+    }
+  }
+
+  async deleteCommentsByTaskId(taskId: string, sess?:ClientSession): Promise<void> {
+    try {
+      this.commentModel.deleteMany({taskId: new ObjectId(taskId)}, sess && {session: sess})
+    } catch(err) {
+      return Promise.reject(new Error('delete comments failed'));
     }
   }
 }

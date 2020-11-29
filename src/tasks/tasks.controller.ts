@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, HttpCode, Param, Body, UseGuards, Req, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, HttpCode, Param, Body, Req, HttpException, HttpStatus, UseGuards } from '@nestjs/common';
 import { Task } from './schemas/tasks.schema';
 import { CreateTaskDto, UpdateTaskDto } from './dto/task.dto';
 import { TasksService } from './tasks.service'
@@ -6,6 +6,8 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Request } from 'express';
 import { UsersService } from '../users/users.service';
 import { UserDocument } from '../users/schemas/users.schema';
+import { ProjectsService } from '../projects/projects.service';
+import { ProjectDocument } from '../projects/schemas/projects.schema';
 
 export interface IUserInfo extends Request{
   user: {
@@ -19,13 +21,16 @@ export interface IUserInfo extends Request{
 export class TasksController {
   constructor(
     private tasksService: TasksService,
-    private usersService: UsersService
+    private usersService: UsersService,
+    private projectsService: ProjectsService
   ){}
 
   @Post()
   @HttpCode(201)
   async createTask(@Body() createTaskDto: CreateTaskDto, @Req() req: IUserInfo) {
     let user: UserDocument
+    let project: ProjectDocument
+
     try {
       user = await this.usersService.findUserById(req.user.userId)
     } catch(err) {
@@ -36,7 +41,16 @@ export class TasksController {
     }
 
     try {
-      await this.tasksService.createTask(createTaskDto, user);
+      project = await this.projectsService.findProjectsById(createTaskDto.projectId)
+    } catch(err) {
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: 'エラーが発生しました。再度お試しください。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+
+    try {
+      await this.tasksService.createTask(createTaskDto, user, project);
     } catch(err) {
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
