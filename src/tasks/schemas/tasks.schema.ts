@@ -8,6 +8,10 @@ export type TaskDocument = Task & Document
 
 @Schema()
 export class Task {
+    //UI表示用ID
+    @Prop({ required: true})
+    taskId: number;
+
     @Prop({ required: true })
     title: string;
 

@@ -7,12 +7,14 @@ import { UserDocument } from '../users/schemas/users.schema';
 import { ObjectId } from 'mongodb';
 import { Comment, CommentDocument } from '../comments/schemas/comments.schema';
 import { ProjectDocument } from '../projects/schemas/projects.schema';
+import { Counter, CounterDocument } from '../counters/schemas/counter.schema';
 
 @Injectable()
 export class TasksService {
   constructor(
     @InjectModel(Task.name) private taskModel: Model<TaskDocument>,
-    @InjectModel(Comment.name) private commentModel: Model<CommentDocument>
+    @InjectModel(Comment.name) private commentModel: Model<CommentDocument>,
+    @InjectModel(Counter.name) private counterModel: Model<CounterDocument>
     ){}
 
   async createTask(createTaskDto: CreateTaskDto, user: UserDocument, project: ProjectDocument): Promise<void>{
@@ -20,10 +22,16 @@ export class TasksService {
     createTaskDto.createdAt = new Date()
 
     const createdTask = new this.taskModel(createTaskDto);
-
     try {
       const sess = await this.taskModel.db.startSession();
       sess.startTransaction();
+      let counterDoc: CounterDocument
+      counterDoc = await this.counterModel.findOneAndUpdate(
+        { key: 'taskId'},
+        { $inc: { seq: 1 }},
+        { upsert: true }
+      )
+      createdTask.taskId = counterDoc.seq
       await createdTask.save({ session: sess });
       user.tasks.push(createdTask.id)
       await user.save({ session: sess });

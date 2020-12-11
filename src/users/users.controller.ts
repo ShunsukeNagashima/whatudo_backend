@@ -2,15 +2,21 @@ import { Body, Controller, Post, Get, Param, HttpException, HttpStatus } from '@
 import { CreateUserDto } from './dto/user.dto';
 import { UserDocument } from './schemas/users.schema';
 import { UsersService } from './users.service';
+import { AuthService } from '../auth/auth.service';
 
 @Controller('api/users')
 export class UsersController {
-  constructor(private userService: UsersService){}
+  constructor(
+    private userService: UsersService,
+    private authService: AuthService
+  ){}
 
   @Post('/signup')
   async signup(@Body() createUserDto: CreateUserDto){
+
+    let user: UserDocument
     try {
-      await this.userService.signup(createUserDto)
+      user = await this.userService.signup(createUserDto)
     } catch(err) {
       if (err.message === 'signup failed') {
         throw new HttpException({
@@ -23,6 +29,15 @@ export class UsersController {
           error: 'ユーザーは既に存在します。ログインしてください。'
         }, HttpStatus.UNPROCESSABLE_ENTITY)
       }
+    }
+
+    try {
+      return this.authService.login(user)
+    } catch(err) {
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: 'エラーが発生しました。再度お試しください。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 

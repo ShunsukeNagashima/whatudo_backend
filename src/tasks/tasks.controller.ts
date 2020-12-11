@@ -52,10 +52,17 @@ export class TasksController {
     try {
       await this.tasksService.createTask(createTaskDto, user, project);
     } catch(err) {
-      throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: 'タスクの作成に失敗しました。'
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+      if (err.message === 'auto increment failed') {
+        throw new HttpException({
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '自動採番に失敗しました。'
+        }, HttpStatus.INTERNAL_SERVER_ERROR)
+      } else {
+        throw new HttpException({
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'タスクの作成に失敗しました。'
+        }, HttpStatus.INTERNAL_SERVER_ERROR)
+      }
     }
   }
 

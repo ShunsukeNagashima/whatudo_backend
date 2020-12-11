@@ -7,13 +7,15 @@ import { Task, TaskSchema } from '../tasks/schemas/tasks.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsersService } from '../users/users.service';
 import { TasksService } from '../tasks/tasks.service';
+import { Counter, CounterSchema } from '../counters/schemas/counter.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Comment.name, schema: CommentSchema },
       { name: User.name, schema: UserSchema},
-      { name: Task.name, schema: TaskSchema}
+      { name: Task.name, schema: TaskSchema},
+      { name: Counter.name, schema: CounterSchema}
     ])
   ],
   controllers: [CommentsController],
