@@ -29,7 +29,10 @@ export class TasksService {
       counterDoc = await this.counterModel.findOneAndUpdate(
         { key: 'taskId'},
         { $inc: { seq: 1 }},
-        { upsert: true }
+        {
+          upsert: true,
+          new: true
+        },
       )
       createdTask.taskId = counterDoc.seq
       await createdTask.save({ session: sess });

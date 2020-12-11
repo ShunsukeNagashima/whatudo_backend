@@ -10,6 +10,7 @@ import { UsersModule } from './users/users.module';
 import { CommentsModule } from './comments/comments.module'
 import { ProjectsModule } from './projects/projects.module';
 import { CategoriesModule } from './categories/categories.module'
+import { CounterModule } from './counters/counters.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { CategoriesModule } from './categories/categories.module'
     ProjectsModule,
     CategoriesModule,
     AuthModule,
+    CounterModule,
     MongooseModule.forRoot(`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.hekpb.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`),
   ],
   controllers: [AppController],
