@@ -31,7 +31,8 @@ export class TasksService {
         { $inc: { seq: 1 }},
         {
           upsert: true,
-          new: true
+          new: true,
+          session: sess
         },
       )
       createdTask.taskId = counterDoc.seq
@@ -42,6 +43,7 @@ export class TasksService {
       await project.save({ session: sess });
       await sess.commitTransaction();
     } catch(err) {
+      console.log(err.message);
       return Promise.reject(new Error('create failed'))
     }
   }
@@ -88,7 +90,6 @@ export class TasksService {
     task.progress = updateTaskDto.progress
     task.pic = updateTaskDto.pic
     task.categoryId = updateTaskDto.categoryId
-    task.groupId = updateTaskDto.groupId
     task.updatedAt = updateTaskDto.updatedAt
 
     try {

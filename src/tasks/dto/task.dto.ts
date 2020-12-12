@@ -11,7 +11,6 @@ export class CreateTaskDto {
   pic: string;
   categoryId: string;
   projectId: string;
-  groupId: string;
   createdAt: Date
 }
 

@@ -45,9 +45,6 @@ export class Task {
     @Prop({ type: Types.ObjectId, ref: 'Project'})
     projectId: ProjectDocument
 
-    @Prop({ type: Types.ObjectId, ref: 'Group'})
-    groupId: string;
-
     @Prop()
     createdAt: Date
 
