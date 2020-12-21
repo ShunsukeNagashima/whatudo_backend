@@ -41,7 +41,7 @@ export class TasksController {
     }
 
     try {
-      project = await this.projectsService.findProjectsById(createTaskDto.projectId)
+      project = await this.projectsService.findProjectsById(createTaskDto.project)
     } catch(err) {
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -79,7 +79,7 @@ export class TasksController {
 
   }
 
-  @Get(':id')
+  @Get('/task/:id')
   async getTasksById(@Param('id') id:string): Promise<Task> {
     try {
       return this.tasksService.getTaskById(id);
@@ -90,6 +90,19 @@ export class TasksController {
       }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
+
+  @Get(':projectId')
+  async getTasksByProjectId(@Param('projectId') projectId:string) {
+    try {
+      return this.tasksService.getTasksByProjectId(projectId);
+    } catch(err) {
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: 'タスクの取得に失敗しました。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  }
+
 
   @Patch('/:id')
   async updateTask(@Param('id') id: string, @Body() updateTasksDto: UpdateTaskDto) {

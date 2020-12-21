@@ -8,6 +8,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { UsersService } from '../users/users.service';
 import { TasksService } from '../tasks/tasks.service';
 import { Counter, CounterSchema } from '../counters/schemas/counter.schema';
+import { Project, ProjectSchema } from '../projects/schemas/projects.schema';
 
 @Module({
   imports: [
@@ -15,7 +16,8 @@ import { Counter, CounterSchema } from '../counters/schemas/counter.schema';
       { name: Comment.name, schema: CommentSchema },
       { name: User.name, schema: UserSchema},
       { name: Task.name, schema: TaskSchema},
-      { name: Counter.name, schema: CounterSchema}
+      { name: Counter.name, schema: CounterSchema},
+      { name: Project.name, schema: ProjectSchema},
     ])
   ],
   controllers: [CommentsController],

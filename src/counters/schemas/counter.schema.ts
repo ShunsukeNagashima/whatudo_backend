@@ -7,7 +7,10 @@ export type CounterDocument = Counter & Document;
 export class Counter {
 
   @Prop()
-  key: string;
+  key1: string;
+
+  @Prop()
+  key2: string;
 
   @Prop()
   seq: number;

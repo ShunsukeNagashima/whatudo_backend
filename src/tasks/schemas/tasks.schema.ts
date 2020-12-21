@@ -19,7 +19,7 @@ export class Task {
     description: string;
 
     @Prop()
-    limitDate: Date;
+    limitDate: string;
 
     @Prop()
     progress: number;
@@ -37,13 +37,13 @@ export class Task {
     modifiedBy: Types.Array<UserDocument>
 
     @Prop({ type: Types.ObjectId, ref: 'User'})
-    pic: string;
+    personInCharge: string;
 
     @Prop({ type: Types.ObjectId, ref: 'Category' })
-    categoryId: string;
+    category: string;
 
     @Prop({ type: Types.ObjectId, ref: 'Project'})
-    projectId: ProjectDocument
+    project: ProjectDocument
 
     @Prop()
     createdAt: Date

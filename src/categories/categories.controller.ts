@@ -3,7 +3,7 @@ import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/categories.dto'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
-@Controller('/api/category')
+@Controller('/api/categories')
 @UseGuards(JwtAuthGuard)
 export class CategoriesController {
   constructor(private categoryService: CategoriesService){}
@@ -16,7 +16,7 @@ export class CategoriesController {
     } catch(err) {
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: 'タスクの作成に失敗しました。'
+        message: 'カテゴリの作成に失敗しました。'
       }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
@@ -24,16 +24,16 @@ export class CategoriesController {
   @Get()
   async getCategories() {
     try {
-      await this.categoryService.getCategory()
+      return this.categoryService.getCategories()
     } catch(err) {
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: 'タスクの取得に失敗しました。'
+        message: 'カテゴリの取得に失敗しました。'
       }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 
-  @Delete()
+  @Delete('/:id')
   async deleteCategory(@Param('id') id: string) {
     try {
       await this.categoryService.deleteCateory(id)
@@ -41,12 +41,12 @@ export class CategoriesController {
       if (err.message === 'could not find a category') {
         throw new HttpException({
           status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: 'タスクの取得に失敗しました。'
+          error: 'カテゴリの取得に失敗しました。'
         }, HttpStatus.INTERNAL_SERVER_ERROR)
       } else if(err.message === 'delete failed') {
         throw new HttpException({
           status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: 'タスクの削除に失敗しました。'
+          error: 'カテゴリの削除に失敗しました。'
         }, HttpStatus.INTERNAL_SERVER_ERROR)
       }
     }

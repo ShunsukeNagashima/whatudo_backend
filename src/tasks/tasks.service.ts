@@ -6,7 +6,7 @@ import { CreateTaskDto, UpdateTaskDto } from './dto/task.dto';
 import { UserDocument } from '../users/schemas/users.schema';
 import { ObjectId } from 'mongodb';
 import { Comment, CommentDocument } from '../comments/schemas/comments.schema';
-import { ProjectDocument } from '../projects/schemas/projects.schema';
+import { Project, ProjectDocument } from '../projects/schemas/projects.schema';
 import { Counter, CounterDocument } from '../counters/schemas/counter.schema';
 
 @Injectable()
@@ -14,20 +14,21 @@ export class TasksService {
   constructor(
     @InjectModel(Task.name) private taskModel: Model<TaskDocument>,
     @InjectModel(Comment.name) private commentModel: Model<CommentDocument>,
-    @InjectModel(Counter.name) private counterModel: Model<CounterDocument>
+    @InjectModel(Counter.name) private counterModel: Model<CounterDocument>,
+    @InjectModel(Project.name) private projectModel: Model<ProjectDocument>
     ){}
 
   async createTask(createTaskDto: CreateTaskDto, user: UserDocument, project: ProjectDocument): Promise<void>{
     createTaskDto.creator = user.id
-    createTaskDto.createdAt = new Date()
 
     const createdTask = new this.taskModel(createTaskDto);
+    createdTask.createdAt = new Date()
     try {
       const sess = await this.taskModel.db.startSession();
       sess.startTransaction();
       let counterDoc: CounterDocument
       counterDoc = await this.counterModel.findOneAndUpdate(
-        { key: 'taskId'},
+        { key1: 'taskId', key2: createTaskDto.project },
         { $inc: { seq: 1 }},
         {
           upsert: true,
@@ -50,7 +51,8 @@ export class TasksService {
 
   async getTasks(): Promise<TaskDocument[]> {
     try {
-      return this.taskModel.find().exec()
+      const tasks =  await this.taskModel.find().populate('category').populate('personInCharge')
+      return tasks
     } catch(err) {
       return Promise.reject(new Error('could not find a task'))
     }
@@ -88,9 +90,8 @@ export class TasksService {
     task.description = updateTaskDto.description
     task.limitDate = updateTaskDto.limitDate
     task.progress = updateTaskDto.progress
-    task.pic = updateTaskDto.pic
-    task.categoryId = updateTaskDto.categoryId
-    task.updatedAt = updateTaskDto.updatedAt
+    task.personInCharge = updateTaskDto.personInCharge
+    task.category = updateTaskDto.categoryId
 
     try {
       return task.save()
@@ -118,12 +119,25 @@ export class TasksService {
       await this.taskModel.deleteOne({_id: new ObjectId(task.id)},{session: sess})
       task.creator.tasks.pull(task)
       await task.creator.save({ session: sess });
-      task.projectId.tasks.pull(task)
-      await task.projectId.save({ session: sess});
+      task.project.tasks.pull(task)
+      await task.project.save({ session: sess});
       await this.commentModel.deleteMany({taskId: new ObjectId(task.id)});
       await sess.commitTransaction();
     } catch(err) {
       return Promise.reject(new Error('delete task failed'))
+    }
+  }
+
+  async getTasksByProjectId(pid: string) {
+
+    try {
+      const project = await this.projectModel.findById(pid);
+      const tasks = await this.taskModel.find({
+        '_id': { $in: project.tasks }
+      }).populate('category').populate('personInCharge')
+      return tasks
+    } catch(err) {
+      return Promise.reject('could not find users by given projectId')
     }
   }
 }

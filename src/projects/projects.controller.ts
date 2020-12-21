@@ -1,18 +1,41 @@
-import { Controller, Get, Post, Delete, Body, Param, HttpCode, UseGuards, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Param, HttpCode, UseGuards, HttpException, HttpStatus, Req } from '@nestjs/common';
 import { CreateProjectDto } from './dto/projects.dto';
 import { ProjectsService } from './projects.service';
+import { UsersService } from '../users/users.service';
+import { UserDocument } from '../users/schemas/users.schema';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+
+interface IUserInfo extends Request{
+  user: {
+    email: string,
+    userId: string
+  }
+}
 
 @Controller('api/projects')
 @UseGuards(JwtAuthGuard)
 export class ProjectsController {
-  constructor(private projectService: ProjectsService) {}
+  constructor(
+    private projectService: ProjectsService,
+    private usersService: UsersService
+  ) {}
 
   @Post()
   @HttpCode(201)
-  async createProject(@Body() createProjectDto: CreateProjectDto) {
+  async createProject(@Req() req: IUserInfo, @Body() createProjectDto: CreateProjectDto) {
+
+    let user: UserDocument
     try {
-      await this.projectService.createProject(createProjectDto)
+      user = await this.usersService.findUserById(req.user.userId)
+    } catch(err) {
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: 'エラーが発生しました。再度お試しください。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+
+    try {
+      await this.projectService.createProject(createProjectDto, user)
     } catch(err) {
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -33,7 +56,7 @@ export class ProjectsController {
     }
   }
 
-  @Delete()
+  @Delete('/:projectId')
   async deleteProject(@Param('id') id: string) {
     try {
       await this.projectService.deleteProject(id)

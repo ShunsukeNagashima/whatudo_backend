@@ -18,9 +18,9 @@ export class CategoriesService {
     }
   }
 
-  async getCategory() {
+  async getCategories() {
     try {
-      return this.categoryModel.find().exec()
+      return this.categoryModel.find()
     }catch(err) {
       return Promise.reject(new Error('could not find a category'))
     }

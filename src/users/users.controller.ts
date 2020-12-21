@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Get, Param, HttpException, HttpStatus } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, HttpException, HttpStatus } from '@nestjs/common';
 import { CreateUserDto } from './dto/user.dto';
 import { UserDocument } from './schemas/users.schema';
 import { UsersService } from './users.service';
@@ -41,18 +41,31 @@ export class UsersController {
     }
   }
 
-  @Get('/:id')
-  async findUserById(@Param('id') id: string ): Promise<UserDocument | void> {
+  @Get('/:projectId')
+  async getUsersByProjectId(@Param('projectId') projectId: string) {
     try {
-      return this.userService.findUserById(id);
+      return this.userService.findUsersByProjectId(projectId)
     } catch(err) {
-      if (err.message === 'could not find a user') {
-        throw new HttpException({
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: 'ユーザーの取得に失敗しました。'
-        }, HttpStatus.INTERNAL_SERVER_ERROR)
-      }
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'ユーザーの取得に失敗しました。再度お試しください。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
+
+  // @Get('/:id')
+  // async findUserById(@Param('id') id: string ): Promise<UserDocument | void> {
+  //   try {
+  //     return this.userService.findUserById(id);
+  //   } catch(err) {
+  //     if (err.message === 'could not find a user') {
+  //       throw new HttpException({
+  //         status: HttpStatus.INTERNAL_SERVER_ERROR,
+  //         error: 'ユーザーの取得に失敗しました。'
+  //       }, HttpStatus.INTERNAL_SERVER_ERROR)
+  //     }
+  //   }
+  // }
+
 
 }
