@@ -1,6 +1,6 @@
 import { IsNotEmpty } from 'class-validator';
 
-export class CreateCommetnDto {
+export class CreateCommentDto {
   @IsNotEmpty()
   title: string;
   detail: string;

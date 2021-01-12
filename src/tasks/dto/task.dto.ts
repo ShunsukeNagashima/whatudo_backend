@@ -1,4 +1,5 @@
 import { IsNotEmpty } from "class-validator";
+import { CreateCommentDto } from '../../comments/dto/comments.dto';
 
 export class CreateTaskDto {
   @IsNotEmpty()
@@ -18,11 +19,11 @@ export class UpdateTaskDto {
   @IsNotEmpty()
   title: string;
   description: string;
-  limitDate: string;
+  limitDate: Date;
   status: string;
   progress: number;
-  comments: string[];
+  comment: CreateCommentDto;
   modifiedBy: string[];
   personInCharge: string;
-  categoryId: string;
+  category: string;
 }

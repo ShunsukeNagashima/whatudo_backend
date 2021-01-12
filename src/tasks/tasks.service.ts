@@ -58,11 +58,11 @@ export class TasksService {
     }
   }
 
-  async getTaskById(id: string): Promise<TaskDocument> {
+  async getTaskById(taskId: number, projectId: string): Promise<TaskDocument> {
 
     let task: TaskDocument;
     try {
-      task =  await this.taskModel.findById(id).exec()
+      task = await this.taskModel.findOne({taskId, project: projectId}).populate({path: 'comments', populate: { path: 'creator', select: 'name' }});
     } catch(err) {
       return Promise.reject(new Error('could not find a task'))
     }
@@ -73,11 +73,12 @@ export class TasksService {
     return task
   }
 
-  async updateTask(id: string, updateTaskDto:UpdateTaskDto) {
+  async updateTask(taskId: number, projectId: string, userId: string, updateTaskDto:UpdateTaskDto): Promise<void>
+   {
     let task: TaskDocument
 
     try {
-      task = await this.taskModel.findById(id);
+      task = await this.taskModel.findOne({taskId, project: projectId})
     } catch(err){
       return Promise.reject(new Error('could not find a task'))
     }
@@ -91,10 +92,20 @@ export class TasksService {
     task.limitDate = updateTaskDto.limitDate
     task.progress = updateTaskDto.progress
     task.personInCharge = updateTaskDto.personInCharge
-    task.category = updateTaskDto.categoryId
+    task.category = updateTaskDto.category
+    task.updatedAt = new Date();
+    task.modifiedBy.push(userId)
+
+    const createdComment = new this.commentModel(updateTaskDto.comment);
+    createdComment.taskId = task._id;
 
     try {
-      return task.save()
+      const sess = await this.taskModel.db.startSession();
+      sess.startTransaction();
+      await createdComment.save({session: sess});
+      task.comments.push(createdComment._id);
+      await task.save({session: sess});
+      await sess.commitTransaction();
     } catch(err) {
       return Promise.reject(new Error('failed update'))
     }

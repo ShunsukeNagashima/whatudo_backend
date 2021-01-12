@@ -1,4 +1,18 @@
-import { Controller, Get, Post, Patch, Delete, HttpCode, Param, Body, Req, HttpException, HttpStatus, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  HttpCode,
+  Param,
+  Body,
+  Req,
+  HttpException,
+  HttpStatus,
+  UseGuards,
+  Query
+} from '@nestjs/common';
 import { Task } from './schemas/tasks.schema';
 import { CreateTaskDto, UpdateTaskDto } from './dto/task.dto';
 import { TasksService } from './tasks.service'
@@ -79,19 +93,20 @@ export class TasksController {
 
   }
 
-  @Get('/task/:id')
-  async getTasksById(@Param('id') id:string): Promise<Task> {
+  @Get('/task/:taskId')
+  async getTaskById(@Param('taskId') taskId: number, @Query('projectId') projectId: string): Promise<Task> {
+
     try {
-      return this.tasksService.getTaskById(id);
+      return this.tasksService.getTaskById(taskId, projectId);
     } catch(err) {
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: 'タスクの取得に失敗しました。'
+        message: 'タスクの取得に失敗しました。'
       }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 
-  @Get(':projectId')
+  @Get('/:projectId')
   async getTasksByProjectId(@Param('projectId') projectId:string) {
     try {
       return this.tasksService.getTasksByProjectId(projectId);
@@ -104,10 +119,10 @@ export class TasksController {
   }
 
 
-  @Patch('/:id')
-  async updateTask(@Param('id') id: string, @Body() updateTasksDto: UpdateTaskDto) {
+  @Patch('/task/:taskId')
+  async updateTask(@Param('taskId') taskId: number, @Query('projectId') projectId: string,@Req() req: IUserInfo, @Body() updateTasksDto: UpdateTaskDto) {
     try {
-      await this.tasksService.updateTask(id, updateTasksDto)
+      await this.tasksService.updateTask(taskId, projectId, req.user.userId, updateTasksDto)
     } catch(err) {
       if (err.message === 'could not find a task') {
         throw new HttpException({

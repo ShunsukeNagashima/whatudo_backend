@@ -1,12 +1,12 @@
 import { Controller, Post, Patch,  Body, Param, HttpCode, UseGuards, HttpException, HttpStatus, Delete, Req, Get, Query } from '@nestjs/common';
-import { CreateCommetnDto, UpdateCommentDto } from './dto/comments.dto';
+import { CreateCommentDto, UpdateCommentDto } from './dto/comments.dto';
 import { CommentsService } from './comments.service';
 import { TasksService } from '../tasks/tasks.service';
 import { UsersService } from '../users/users.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { IUserInfo } from '../tasks/tasks.controller';
 import { TaskDocument } from '../tasks/schemas/tasks.schema';
-import { UserDocument } from 'src/users/schemas/users.schema';
+import { UserDocument } from '../users/schemas/users.schema';
 
 @Controller('api/comments')
 @UseGuards(JwtAuthGuard)
@@ -19,12 +19,11 @@ export class CommentsController {
 
   @Post()
   @HttpCode(201)
-  async createComment(@Body() createCommentDto: CreateCommetnDto, @Query('taskId') taskId: string, @Req() req: IUserInfo) {
+  async createComment(@Body() createCommentDto: CreateCommentDto, @Query('taskId') taskId:number, @Query('projectId') projectId: string, @Req() req: IUserInfo) {
     let task: TaskDocument;
     let user: UserDocument;
-
     try {
-      task = await this.tasksService.getTaskById(taskId);
+      task = await this.tasksService.getTaskById(taskId, projectId);
     } catch(err) {
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -83,7 +82,7 @@ export class CommentsController {
     }
   }
 
-  @Delete(':id')
+  @Delete('/:id')
   async deleteComment(@Param('id') id: string) {
     try {
       this.commentsService.deleteComment(id);

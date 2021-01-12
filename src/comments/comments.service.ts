@@ -1,7 +1,7 @@
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Comment, CommentDocument } from './schemas/comments.schema';
-import { CreateCommetnDto, UpdateCommentDto } from './dto/comments.dto';
+import { CreateCommentDto, UpdateCommentDto } from './dto/comments.dto';
 import { Injectable } from '@nestjs/common';
 import { TaskDocument } from '../tasks/schemas/tasks.schema';
 import { UserDocument } from '../users/schemas/users.schema';
@@ -12,7 +12,7 @@ import { ClientSession } from 'mongoose';
 export class CommentsService {
   constructor(@InjectModel(Comment.name) private commentModel: Model<CommentDocument>){}
 
-  async createComment(createCommentDto: CreateCommetnDto, task: TaskDocument, user: UserDocument): Promise<void> {
+  async createComment(createCommentDto: CreateCommentDto, task: TaskDocument, user: UserDocument): Promise<void> {
     const createdComment = new this.commentModel(createCommentDto);
 
     createdComment.taskId = task.id
@@ -38,7 +38,7 @@ export class CommentsService {
     }
   }
 
-  async updateComment(id: string, updateCommentdto :UpdateCommentDto) {
+  async updateComment(id: string, updateCommentdto :UpdateCommentDto): Promise<void> {
     let comment: CommentDocument
 
     try {
@@ -55,7 +55,7 @@ export class CommentsService {
     comment.detail = updateCommentdto.detail;
 
     try {
-      return comment.save()
+      await comment.save()
     } catch(err) {
       return Promise.reject(new Error('update comment failed'))
     }
