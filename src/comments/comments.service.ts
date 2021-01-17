@@ -13,10 +13,10 @@ export class CommentsService {
   constructor(@InjectModel(Comment.name) private commentModel: Model<CommentDocument>){}
 
   async createComment(createCommentDto: CreateCommentDto, task: TaskDocument, user: UserDocument): Promise<void> {
+    createCommentDto.creator = user.id
     const createdComment = new this.commentModel(createCommentDto);
 
     createdComment.taskId = task.id
-    createdComment.creator = user.id
     try {
       const sess = await this.commentModel.db.startSession()
       sess.startTransaction()
@@ -38,11 +38,11 @@ export class CommentsService {
     }
   }
 
-  async updateComment(id: string, updateCommentdto :UpdateCommentDto): Promise<void> {
+  async updateComment(id: string, updateCommentdto :UpdateCommentDto) {
     let comment: CommentDocument
 
     try {
-      comment = await this.commentModel.findById(id)
+      comment = await this.commentModel.findById(id).populate({path: 'creator', select: 'name'})
     } catch(err) {
       return Promise.reject(new Error('could not find a comment'))
     }
@@ -55,13 +55,13 @@ export class CommentsService {
     comment.detail = updateCommentdto.detail;
 
     try {
-      await comment.save()
+      return comment.save()
     } catch(err) {
       return Promise.reject(new Error('update comment failed'))
     }
   }
 
-  async deleteComment(id: string): Promise<void> {
+  async deleteComment(id: string, task: TaskDocument): Promise<void> {
     let comment: CommentDocument
     try {
       comment = await this.commentModel.findById(id)
@@ -70,7 +70,12 @@ export class CommentsService {
     }
 
     try {
-      comment.remove()
+      const sess = await this.commentModel.db.startSession()
+      await sess.startTransaction()
+      task.comments.pull(comment)
+      await task.save({session: sess})
+      await this.commentModel.deleteOne({_id: new ObjectId(id)}, {session: sess})
+      sess.commitTransaction();
     } catch(err) {
       return Promise.reject(new Error('delete comment failed'));
     }

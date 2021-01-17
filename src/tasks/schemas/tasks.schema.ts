@@ -28,19 +28,19 @@ export class Task {
     status: string;
 
     @Prop({ type: [{ type: Types.ObjectId, ref: 'Comment'}]})
-    comments: Types.Array<CommentDocument>;
+    comments: Types.Array<CommentDocument> & Types.ObjectId;
 
     @Prop({ type: Types.ObjectId, ref: 'User'})
-    creator: UserDocument;
+    creator: UserDocument & Types.ObjectId;
 
     @Prop({ type: [{ type: Types.ObjectId, ref: 'User'}]})
     modifiedBy: Types.Array<UserDocument> & Types.ObjectId
 
     @Prop({ type: Types.ObjectId, ref: 'User'})
-    personInCharge: string;
+    personInCharge: Types.ObjectId;
 
     @Prop({ type: Types.ObjectId, ref: 'Category' })
-    category: string;
+    category: Types.ObjectId;
 
     @Prop({ type: Types.ObjectId, ref: 'Project'})
     project: ProjectDocument & Types.ObjectId

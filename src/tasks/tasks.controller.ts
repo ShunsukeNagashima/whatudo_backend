@@ -13,7 +13,7 @@ import {
   UseGuards,
   Query
 } from '@nestjs/common';
-import { Task } from './schemas/tasks.schema';
+import { Task, TaskDocument } from './schemas/tasks.schema';
 import { CreateTaskDto, UpdateTaskDto } from './dto/task.dto';
 import { TasksService } from './tasks.service'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -65,6 +65,7 @@ export class TasksController {
 
     try {
       await this.tasksService.createTask(createTaskDto, user, project);
+      return { message: 'タスクを作成しました。'}
     } catch(err) {
       if (err.message === 'auto increment failed') {
         throw new HttpException({
@@ -81,33 +82,7 @@ export class TasksController {
   }
 
   @Get()
-  async getTasks(): Promise<Task[]> {
-    try {
-      return this.tasksService.getTasks()
-    } catch(err) {
-      throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: 'タスクの取得に失敗しました。'
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
-    }
-
-  }
-
-  @Get('/task/:taskId')
-  async getTaskById(@Param('taskId') taskId: number, @Query('projectId') projectId: string): Promise<Task> {
-
-    try {
-      return this.tasksService.getTaskById(taskId, projectId);
-    } catch(err) {
-      throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: 'タスクの取得に失敗しました。'
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
-    }
-  }
-
-  @Get('/:projectId')
-  async getTasksByProjectId(@Param('projectId') projectId:string) {
+  async getTasksByProjectId(@Query('projectId') projectId:string) {
     try {
       return this.tasksService.getTasksByProjectId(projectId);
     } catch(err) {
@@ -118,11 +93,48 @@ export class TasksController {
     }
   }
 
+  @Get('/:id')
+  async getTaskById(@Param('id') id: string): Promise<Task> {
+
+    try {
+      return this.tasksService.getTaskById(id);
+    } catch(err) {
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'タスクの取得に失敗しました。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  }
+
+  @Get('/task/:taskId')
+  async getTaskByTaskId(@Param('taskId') taskId: number, @Query('projectId') projectId: string): Promise<Task> {
+
+    try {
+      return this.tasksService.getTaskByTaskId(taskId, projectId);
+    } catch(err) {
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'タスクの取得に失敗しました。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  }
 
   @Patch('/task/:taskId')
   async updateTask(@Param('taskId') taskId: number, @Query('projectId') projectId: string,@Req() req: IUserInfo, @Body() updateTasksDto: UpdateTaskDto) {
+    let updatedTask: TaskDocument
+    let user: UserDocument
+
     try {
-      await this.tasksService.updateTask(taskId, projectId, req.user.userId, updateTasksDto)
+      user = await this.usersService.findUserById(req.user.userId)
+    } catch(err) {
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'ユーザの取得に失敗しました。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+
+    try {
+      updatedTask =  await this.tasksService.updateTask(taskId, projectId, user, updateTasksDto)
     } catch(err) {
       if (err.message === 'could not find a task') {
         throw new HttpException({
@@ -136,6 +148,7 @@ export class TasksController {
         }, HttpStatus.INTERNAL_SERVER_ERROR)
       }
     }
+    return { task: updatedTask, message: 'タスクを更新しました。'}
   }
 
   @Delete('/:id')

@@ -17,10 +17,10 @@ export class User {
   password: string;
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Project'}]})
-  projects: Types.Array<ProjectDocument>
+  projects: Types.Array<ProjectDocument> & Types.Array<Types.ObjectId>
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Task' }]})
-  tasks: Types.Array<TaskDocument>
+  tasks: Types.Array<TaskDocument> & Types.Array<Types.ObjectId>
 }
 
 export const UserSchema = SchemaFactory.createForClass(User)

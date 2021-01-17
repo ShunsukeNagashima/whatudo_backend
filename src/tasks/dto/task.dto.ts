@@ -5,7 +5,7 @@ export class CreateTaskDto {
   @IsNotEmpty()
   title: string;
   description: string;
-  limitDate: string;
+  limitDate: Date;
   status: string;
   progress: number;
   comments: string[];

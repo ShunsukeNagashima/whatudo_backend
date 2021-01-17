@@ -1,4 +1,18 @@
-import { Controller, Post, Patch,  Body, Param, HttpCode, UseGuards, HttpException, HttpStatus, Delete, Req, Get, Query } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Patch,
+  Body,
+  Param,
+  HttpCode,
+  UseGuards,
+  HttpException,
+  HttpStatus,
+  Delete,
+  Req,
+  Get,
+  Query
+} from '@nestjs/common';
 import { CreateCommentDto, UpdateCommentDto } from './dto/comments.dto';
 import { CommentsService } from './comments.service';
 import { TasksService } from '../tasks/tasks.service';
@@ -7,6 +21,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { IUserInfo } from '../tasks/tasks.controller';
 import { TaskDocument } from '../tasks/schemas/tasks.schema';
 import { UserDocument } from '../users/schemas/users.schema';
+import { CommentDocument } from './schemas/comments.schema';
 
 @Controller('api/comments')
 @UseGuards(JwtAuthGuard)
@@ -19,11 +34,11 @@ export class CommentsController {
 
   @Post()
   @HttpCode(201)
-  async createComment(@Body() createCommentDto: CreateCommentDto, @Query('taskId') taskId:number, @Query('projectId') projectId: string, @Req() req: IUserInfo) {
+  async createComment(@Body() createCommentDto: CreateCommentDto, @Query('taskId') taskId:string, @Req() req: IUserInfo) {
     let task: TaskDocument;
     let user: UserDocument;
     try {
-      task = await this.tasksService.getTaskById(taskId, projectId);
+      task = await this.tasksService.getTaskById(taskId);
     } catch(err) {
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -65,8 +80,10 @@ export class CommentsController {
   @Patch('/:id')
   @HttpCode(201)
   async updateComment(@Param('id') id: string, @Body() updateCommentDto: UpdateCommentDto){
+    let updatedComment: CommentDocument
     try {
-      this.commentsService.updateComment(id, updateCommentDto)
+      updatedComment = await this.commentsService.updateComment(id, updateCommentDto)
+      console.log(updatedComment)
     } catch(err) {
       if (err.message === 'could not find a comment') {
         throw new HttpException({
@@ -80,12 +97,23 @@ export class CommentsController {
         }, HttpStatus.INTERNAL_SERVER_ERROR)
       }
     }
+    return { commentData: updatedComment, message: 'コメントを更新しました。'}
   }
 
   @Delete('/:id')
-  async deleteComment(@Param('id') id: string) {
+  async deleteComment(@Param('id') id: string, @Query('taskId') taskId: string) {
+    let task: TaskDocument
     try {
-      this.commentsService.deleteComment(id);
+      task = await this.tasksService.getTaskById(taskId)
+    } catch(err) {
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: 'タスクの取得に失敗しました。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+
+    try {
+      this.commentsService.deleteComment(id, task);
     } catch(err) {
       if (err.message === 'could not find a comment') {
         throw new HttpException({

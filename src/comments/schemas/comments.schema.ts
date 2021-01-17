@@ -6,7 +6,7 @@ export type CommentDocument = Comment & Document
 
 @Schema()
 export class Comment {
-  @Prop({ required: true })
+  @Prop()
   title: string;
 
   @Prop()
