@@ -119,6 +119,19 @@ export class TasksController {
     }
   }
 
+  @Get('/user/dashboard')
+  async getTasksByUserId(@Req() req: IUserInfo) {
+    try {
+      const tasks =  await this.tasksService.getTasksByUserId(req.user.userId)
+      return { tasks }
+    } catch(err) {
+      throw new HttpException({
+        statsu: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'タスクの取得に失敗しました。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  }
+
   @Patch('/task/:taskId')
   async updateTask(@Param('taskId') taskId: number, @Query('projectId') projectId: string,@Req() req: IUserInfo, @Body() updateTasksDto: UpdateTaskDto) {
     let updatedTask: TaskDocument
@@ -168,5 +181,6 @@ export class TasksController {
         }, HttpStatus.INTERNAL_SERVER_ERROR)
       }
     }
+    return { message: 'タスクを削除しました。'}
   }
 }

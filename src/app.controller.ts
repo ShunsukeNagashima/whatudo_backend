@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Req, UseGuards, Query } from '@nestjs/common';
 import { Request } from 'express'
 import { UserDocument } from './users/schemas/users.schema';
 import { LocalAuthGuard } from './auth/local-auth.guard';
@@ -15,8 +15,15 @@ export class AppController {
 
   @UseGuards(LocalAuthGuard)
   @Post('/api/auth/login')
-  async login(@Req() req: AuthInfoRequest) {
-    return this.authService.login(req.user);
+  async login(@Req() req: AuthInfoRequest, @Query('token') token: string) {
+    let message;
+    const userObj =  await this.authService.login(req.user, token);
+    if (token) {
+      message = `${userObj.project.name}に参加しました。`
+    } else {
+      message = 'ログインしました。'
+    }
+    return { userObj, message }
   }
 
   @UseGuards(JwtAuthGuard)

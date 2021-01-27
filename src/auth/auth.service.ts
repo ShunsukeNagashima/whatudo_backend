@@ -2,14 +2,16 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { compare } from 'bcryptjs';
 import { User, UserDocument } from '../users/schemas/users.schema'
 import { UsersService } from '../users/users.service';
+import { ProjectsService } from '../projects/projects.service';
 import { JwtService } from '@nestjs/jwt';
-
+import { ProjectDocument } from 'src/projects/schemas/projects.schema';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
-    private jwtService: JwtService
+    private jwtService: JwtService,
+    private projectsService: ProjectsService
   ){}
 
   async validateUser(email: string, password: string): Promise<any> {
@@ -44,19 +46,46 @@ export class AuthService {
     if (!isValidPassword) {
       throw new HttpException({
         status: HttpStatus.UNAUTHORIZED,
-        error: 'Eメールまたはパスワードが間違っています。'
+        message: 'Eメールまたはパスワードが間違っています。'
       }, HttpStatus.UNAUTHORIZED);
     }
 
     return existingUser
   }
 
-  async login(user: UserDocument) {
+  async login(user: UserDocument, token?: string) {
+    let project: ProjectDocument;
+    if (token) {
+      try {
+        const result = this.jwtService.verify(token, { secret: process.env.JWT_KEY_FOR_INVITING})
+        if (result ) {
+          const d = new Date(0);
+          d.setUTCSeconds(result.exp);
+          console.log(d);
+          console.log(new Date())
+          if (d > new Date()) {
+            project = await this.projectsService.addUserToProject(result.projectId, user)
+          } else {
+            throw new HttpException({
+              status: HttpStatus.BAD_REQUEST,
+              message: 'トークンの有効期限が切れています。'
+            }, HttpStatus.BAD_REQUEST)
+          }
+          console.log(d > new Date())
+    }
+      } catch(err) {
+        throw new HttpException({
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'プロジェクトへの参加に失敗しました。再度お試しください。'
+        }, HttpStatus.INTERNAL_SERVER_ERROR)
+      }
+    }
     const payload = { email: user.email, sub: user.id};
     return {
       userId: user.id,
       projects: user.projects,
-      access_token: this.jwtService.sign(payload, { secret: process.env.JWT_KEY })
+      access_token: this.jwtService.sign(payload, { secret: process.env.JWT_KEY }),
+      project
     };
   }
 

@@ -6,6 +6,7 @@ import { User, UserSchema } from './schemas/users.schema';
 import { AuthService } from '../auth/auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { Project, ProjectSchema } from '../projects/schemas/projects.schema';
+import { ProjectsService } from '../projects/projects.service'
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { Project, ProjectSchema } from '../projects/schemas/projects.schema';
     })
   ],
   controllers: [UsersController],
-  providers: [UsersService, AuthService],
+  providers: [UsersService, AuthService, ProjectsService],
   exports: [UsersService]
 })
 export class UsersModule {}

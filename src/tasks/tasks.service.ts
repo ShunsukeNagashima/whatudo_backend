@@ -130,7 +130,7 @@ export class TasksService {
     let task: TaskDocument
 
     try {
-     task = await this.taskModel.findById(id).populate('creator').populate('projectId');
+     task = await this.taskModel.findById(id).populate('creator').populate('project');
     } catch(err){
       return Promise.reject(new Error('could not find a task'))
     }
@@ -163,7 +163,17 @@ export class TasksService {
       }).populate('category').populate('personInCharge')
       return {tasks, message: 'タスクの取得に成功しました。'}
     } catch(err) {
-      return Promise.reject('could not find users by given projectId')
+      return Promise.reject('could not find tasks by given projectId')
     }
   }
+
+  async getTasksByUserId(userId: string) {
+    try {
+      const tasks = await this.taskModel.find({ personInCharge: new ObjectId(userId)}).populate('comments');
+      return tasks;
+    } catch(err) {
+      return Promise.reject('could not find tasks by given userId')
+    }
+  }
+
 }

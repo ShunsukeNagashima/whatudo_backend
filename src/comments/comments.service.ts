@@ -15,6 +15,8 @@ export class CommentsService {
   async createComment(createCommentDto: CreateCommentDto, task: TaskDocument, user: UserDocument): Promise<void> {
     createCommentDto.creator = user.id
     const createdComment = new this.commentModel(createCommentDto);
+    createdComment.createdAt = new Date();
+    createdComment.updatedAt = new Date();
 
     createdComment.taskId = task.id
     try {
@@ -53,6 +55,7 @@ export class CommentsService {
 
     comment.title = updateCommentdto.title;
     comment.detail = updateCommentdto.detail;
+    comment.updatedAt = new Date()
 
     try {
       return comment.save()

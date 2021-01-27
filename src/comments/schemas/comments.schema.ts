@@ -17,6 +17,12 @@ export class Comment {
 
   @Prop({ type: Types.ObjectId, ref: 'Task'})
   taskId: Types.ObjectId
+
+  @Prop()
+  createdAt: Date
+
+  @Prop()
+  updatedAt: Date
 }
 
 export const CommentSchema = SchemaFactory.createForClass(Comment)

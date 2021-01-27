@@ -9,7 +9,7 @@ import { CreateProjectDto } from './dto/projects.dto';
 export class ProjectsService {
   constructor(@InjectModel(Project.name) private projectModel: Model<ProjectDocument>){}
 
-  async createProject(createProjectDto: CreateProjectDto, user: UserDocument): Promise<void> {
+  async createProject(createProjectDto: CreateProjectDto, user: UserDocument): Promise<ProjectDocument> {
     const createdProject = new this.projectModel(createProjectDto)
 
     try {
@@ -20,6 +20,7 @@ export class ProjectsService {
       await user.save({ session: sess })
       await createdProject.save({ session: sess })
       await sess.commitTransaction();
+      return createdProject
     } catch(err) {
       return Promise.reject(new Error('create project failed'))
     }
@@ -53,6 +54,32 @@ export class ProjectsService {
       return this.projectModel.findById(id)
     } catch(err) {
       return Promise.reject(new Error('could not find a project'))
+    }
+  }
+
+  async addUserToProject(projectId: string, user: UserDocument): Promise<ProjectDocument> {
+    let project: ProjectDocument
+    try {
+      project = await this.projectModel.findById(projectId)
+
+      if(!project) {
+        return Promise.reject(new Error('could not find project'))
+      }
+
+      const sess = await this.projectModel.db.startSession();
+      await sess.startTransaction();
+      const userInPrj = project.users.find(u => u._id == user.id)
+      if (userInPrj) {
+        return Promise.reject(new Error('user already exists'));
+      }
+      project.users.push(user.id);
+      await project.save({session: sess});
+      user.projects.push(project)
+      await user.save({session: sess});
+      await sess.commitTransaction();
+      return project
+    } catch(err) {
+      return Promise.reject(new Error('create token failed'))
     }
   }
 
