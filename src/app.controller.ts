@@ -17,7 +17,17 @@ export class AppController {
   @Post('/api/auth/login')
   async login(@Req() req: AuthInfoRequest, @Query('token') token: string) {
     let message;
-    const userObj =  await this.authService.login(req.user, token);
+    let userObj;
+    try {
+      userObj = await this.authService.login(req.user, token);
+      console.log(userObj);
+    } catch(err) {
+      throw err
+      // throw new HttpException({
+      //   status: err.status,
+      //   message: err.message
+      // }, err.status);
+    }
     if (token) {
       message = `${userObj.project.name}に参加しました。`
     } else {

@@ -1,5 +1,5 @@
 import { Model } from 'mongoose';
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Project, ProjectDocument } from './schemas/projects.schema';
 import { UserDocument } from '../users/schemas/users.schema';
@@ -22,7 +22,9 @@ export class ProjectsService {
       await sess.commitTransaction();
       return createdProject
     } catch(err) {
-      return Promise.reject(new Error('create project failed'))
+      throw new HttpException({
+        message: 'プロジェクトの作成に失敗しました。再度お試しください。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 
@@ -30,7 +32,9 @@ export class ProjectsService {
     try {
       return this.projectModel.find().exec()
     }catch(err) {
-      return Promise.reject(new Error('could not gett projects'))
+      throw new HttpException({
+        message: 'プロジェクトの取得に失敗しました。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 
@@ -39,13 +43,17 @@ export class ProjectsService {
     try {
       project = await this.projectModel.findById(id)
     } catch(err){
-      return Promise.reject(new Error('could not find a project'));
+      throw new HttpException({
+        message: 'プロジェクトの取得に失敗しました。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
     try {
       project.remove()
     } catch(err) {
-      return Promise.reject(new Error('delete project failed'));
+      throw new HttpException({
+        message: 'プロジェクトの削除に失敗しました。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 
@@ -53,7 +61,9 @@ export class ProjectsService {
     try {
       return this.projectModel.findById(id)
     } catch(err) {
-      return Promise.reject(new Error('could not find a project'))
+      throw new HttpException({
+        message: 'プロジェクトの取得に失敗しました。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 
@@ -63,14 +73,18 @@ export class ProjectsService {
       project = await this.projectModel.findById(projectId)
 
       if(!project) {
-        return Promise.reject(new Error('could not find project'))
+        throw new HttpException({
+          message: 'プロジェクトの取得に失敗しました。'
+        }, HttpStatus.INTERNAL_SERVER_ERROR)
       }
 
       const sess = await this.projectModel.db.startSession();
       await sess.startTransaction();
       const userInPrj = project.users.find(u => u._id == user.id)
       if (userInPrj) {
-        return Promise.reject(new Error('user already exists'));
+        throw new HttpException({
+          message: '既に参加済みのプロジェクトです。'
+        }, HttpStatus.INTERNAL_SERVER_ERROR)
       }
       project.users.push(user.id);
       await project.save({session: sess});
@@ -79,7 +93,9 @@ export class ProjectsService {
       await sess.commitTransaction();
       return project
     } catch(err) {
-      return Promise.reject(new Error('create token failed'))
+      throw new HttpException({
+        message: 'プロジェクトへの参加に失敗しました。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 

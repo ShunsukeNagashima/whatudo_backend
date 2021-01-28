@@ -21,16 +21,14 @@ export class AuthService {
       existingUser = await this.usersService.findUserByEmail(email)
     } catch(err) {
       throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: 'エラーが発生しました。もう一度お試しください。'
       }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     if (!existingUser) {
       throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
         message: 'Eメールまたはパスワードが間違っています。'
-      }, HttpStatus.INTERNAL_SERVER_ERROR);
+      }, HttpStatus.UNAUTHORIZED);
     }
 
     let isValidPassword: boolean;
@@ -38,14 +36,12 @@ export class AuthService {
       isValidPassword = await compare(password, existingUser.password)
     } catch(err) {
       throw new HttpException({
-        status: HttpStatus.UNAUTHORIZED,
         message: 'エラーが発生しました。もう一度お試しください。'
       }, HttpStatus.UNAUTHORIZED);
     }
 
     if (!isValidPassword) {
       throw new HttpException({
-        status: HttpStatus.UNAUTHORIZED,
         message: 'Eメールまたはパスワードが間違っています。'
       }, HttpStatus.UNAUTHORIZED);
     }
@@ -67,15 +63,12 @@ export class AuthService {
             project = await this.projectsService.addUserToProject(result.projectId, user)
           } else {
             throw new HttpException({
-              status: HttpStatus.BAD_REQUEST,
               message: 'トークンの有効期限が切れています。'
             }, HttpStatus.BAD_REQUEST)
           }
-          console.log(d > new Date())
     }
       } catch(err) {
         throw new HttpException({
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
           message: 'プロジェクトへの参加に失敗しました。再度お試しください。'
         }, HttpStatus.INTERNAL_SERVER_ERROR)
       }

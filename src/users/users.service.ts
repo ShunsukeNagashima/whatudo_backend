@@ -1,5 +1,5 @@
 import { Model } from 'mongoose'
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { hash } from 'bcryptjs'
 
@@ -15,23 +15,28 @@ export class UsersService {
   ){}
 
   async signup(user: CreateUserDto) {
-
     let existingUser: UserDocument;
     try {
       existingUser = await this.userModel.findOne({email: user.email})
     } catch(err) {
-      return Promise.reject(new Error('signup failed'))
+      throw new HttpException({
+        message: 'サインアップに失敗しました。再度お試しください。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
     if (existingUser) {
-      return Promise.reject(new Error('already exists'))
+      throw new HttpException({
+        message: '既に登録済みです。ログインしてください。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
     let hashedPassword;
     try {
       hashedPassword = await hash(user.password, 12)
     } catch(err) {
-      return Promise.reject(new Error('signup failed'))
+      throw new HttpException({
+        message: 'サインアップに失敗しました。再度お試しください。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
     user.password = hashedPassword
@@ -40,7 +45,9 @@ export class UsersService {
     try {
       return createdUser.save()
     } catch(err) {
-      return Promise.reject(new Error('signup failed'))
+      throw new HttpException({
+        message: 'サインアップに失敗しました。再度お試しください。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 
@@ -49,7 +56,9 @@ export class UsersService {
       const user = await this.userModel.findOne({email}).populate('projects')
       return user
     } catch(err) {
-      return Promise.reject(new Error('could not find a user'))
+      throw new HttpException({
+        message: 'ユーザーの取得に失敗しました。再度お試しください。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 
@@ -57,7 +66,9 @@ export class UsersService {
     try {
       return await this.userModel.findById(id, '-passowrd')
     } catch(err) {
-      return Promise.reject(new Error('could not find a user'))
+      throw new HttpException({
+        message: 'ユーザーの取得に失敗しました。再度お試しください。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 
@@ -71,7 +82,9 @@ export class UsersService {
         }
       })
     }catch(err) {
-      return Promise.reject('could not find users by given projectId')
+      throw new HttpException({
+        message: 'ユーザーの取得に失敗しました。再度お試しください。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 }

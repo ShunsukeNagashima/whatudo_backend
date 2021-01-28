@@ -2,7 +2,7 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Comment, CommentDocument } from './schemas/comments.schema';
 import { CreateCommentDto, UpdateCommentDto } from './dto/comments.dto';
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { TaskDocument } from '../tasks/schemas/tasks.schema';
 import { UserDocument } from '../users/schemas/users.schema';
 import { ObjectId } from 'mongodb'
@@ -28,7 +28,9 @@ export class CommentsService {
       await task.save({ session: sess });
       await sess.commitTransaction();
     } catch(err) {
-      return Promise.reject(new Error('create comment failed'))
+      throw new HttpException({
+        message: 'コメントの作成に失敗しました。再度お試しください。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
   };
 
@@ -36,7 +38,9 @@ export class CommentsService {
     try {
       return this.commentModel.find().exec
     } catch(err) {
-      return Promise.reject(new Error('get comments failed'))
+      throw new HttpException({
+        message: 'コメントの取得に失敗しました。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 
@@ -46,11 +50,15 @@ export class CommentsService {
     try {
       comment = await this.commentModel.findById(id).populate({path: 'creator', select: 'name'})
     } catch(err) {
-      return Promise.reject(new Error('could not find a comment'))
+      throw new HttpException({
+        message: 'コメントの取得に失敗しました。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
     if(!comment) {
-      return Promise.reject(new Error('could not find a comment'))
+      throw new HttpException({
+        message: 'コメントが見つかりません。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
     comment.title = updateCommentdto.title;
@@ -60,7 +68,9 @@ export class CommentsService {
     try {
       return comment.save()
     } catch(err) {
-      return Promise.reject(new Error('update comment failed'))
+      throw new HttpException({
+        message: 'コメントの更新に失敗しました。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 
@@ -69,7 +79,9 @@ export class CommentsService {
     try {
       comment = await this.commentModel.findById(id)
     } catch(err){
-      return Promise.reject(new Error('could not find a comment'));
+      throw new HttpException({
+        message: 'コメントの取得に失敗しました。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
     try {
@@ -80,7 +92,9 @@ export class CommentsService {
       await this.commentModel.deleteOne({_id: new ObjectId(id)}, {session: sess})
       sess.commitTransaction();
     } catch(err) {
-      return Promise.reject(new Error('delete comment failed'));
+      throw new HttpException({
+        message: 'コメントが見つかりません。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 
@@ -88,7 +102,9 @@ export class CommentsService {
     try {
       this.commentModel.deleteMany({taskId: new ObjectId(taskId)}, sess && {session: sess})
     } catch(err) {
-      return Promise.reject(new Error('delete comments failed'));
+      throw new HttpException({
+        message: 'コメントの削除に失敗しました。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 }

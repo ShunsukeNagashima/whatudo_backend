@@ -1,5 +1,9 @@
 import { Model }  from 'mongoose';
-import { Injectable }from '@nestjs/common'
+import {
+  Injectable,
+  HttpStatus,
+  HttpException
+}from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Task, TaskDocument } from './schemas/tasks.schema';
 import { CreateTaskDto, UpdateTaskDto } from './dto/task.dto';
@@ -45,53 +49,62 @@ export class TasksService {
       await project.save({ session: sess });
       await sess.commitTransaction();
     } catch(err) {
-      console.log(err.message);
-      return Promise.reject(new Error('create failed'))
+      throw new HttpException({
+        message: 'タスクの作成に失敗しました。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 
   async getTaskById(id: string): Promise<TaskDocument> {
-
     let task: TaskDocument;
     try {
       task = await this.taskModel.findById(id).populate({path: 'comments', populate: { path: 'creator', select: 'name' }});
     } catch(err) {
-      return Promise.reject(new Error('could not find a task'))
+      throw new HttpException({
+        messag: 'タスクの取得に失敗しました。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
     if (!task) {
-      return Promise.reject(new Error('could not find a task'))
+      throw new HttpException({
+        messag: 'タスクが見つかりませんでした。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
     return task
   }
 
   async getTaskByTaskId(taskId: number, projectId: string): Promise<TaskDocument> {
-
     let task: TaskDocument;
     try {
       task = await this.taskModel.findOne({taskId, project: projectId}).populate({path: 'comments', populate: { path: 'creator', select: 'name' }});
     } catch(err) {
-      return Promise.reject(new Error('could not find a task'))
+      throw new HttpException({
+        message: 'タスクの取得に失敗しました。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
     if (!task) {
-      return Promise.reject(new Error('could not find a task'))
+      throw new HttpException({
+        message: 'タスクが見つかりませんでした。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
     return task
   }
 
-  async updateTask(taskId: number, projectId: string, userDoc: UserDocument, updateTaskDto:UpdateTaskDto)
-   {
+  async updateTask(taskId: number, projectId: string, userDoc: UserDocument, updateTaskDto:UpdateTaskDto) {
     let task: TaskDocument
-
     try {
       task = await this.taskModel.findOne({taskId, project: projectId}).populate({path: 'comments', populate: { path: 'creator', select: 'name' }});
     } catch(err){
-      return Promise.reject(new Error('could not find a task'))
+      throw new HttpException({
+        message: 'タスクの取得に失敗しました。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
     if (!task) {
-      return Promise.reject(new Error('could not find a task'))
+      throw new HttpException({
+        message: 'タスクが見つかりませんでした。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
     task.title = updateTaskDto.title
@@ -122,7 +135,9 @@ export class TasksService {
       }
       return task;
     } catch(err) {
-      return Promise.reject(new Error('failed update'))
+      throw new HttpException({
+        message: 'タスクの更新に失敗しました。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 
@@ -132,11 +147,15 @@ export class TasksService {
     try {
      task = await this.taskModel.findById(id).populate('creator').populate('project');
     } catch(err){
-      return Promise.reject(new Error('could not find a task'))
+      throw new HttpException({
+        message: 'タスクの取得に失敗しました。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
     if (!task) {
-      return Promise.reject(new Error('could not find a task'))
+      throw new HttpException({
+        message: 'タスクが見つかりませんでした。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
     try {
@@ -150,12 +169,13 @@ export class TasksService {
       await this.commentModel.deleteMany({taskId: new ObjectId(task.id)});
       await sess.commitTransaction();
     } catch(err) {
-      return Promise.reject(new Error('delete task failed'))
+      throw new HttpException({
+        message: 'タスクの削除に失敗しました。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 
   async getTasksByProjectId(pid: string) {
-
     try {
       const project = await this.projectModel.findById(pid);
       const tasks = await this.taskModel.find({
@@ -163,7 +183,9 @@ export class TasksService {
       }).populate('category').populate('personInCharge')
       return {tasks, message: 'タスクの取得に成功しました。'}
     } catch(err) {
-      return Promise.reject('could not find tasks by given projectId')
+      throw new HttpException({
+        message: 'タスクの取得に失敗しました。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 
@@ -172,7 +194,9 @@ export class TasksService {
       const tasks = await this.taskModel.find({ personInCharge: new ObjectId(userId)}).populate('comments');
       return tasks;
     } catch(err) {
-      return Promise.reject('could not find tasks by given userId')
+      throw new HttpException({
+        message: 'タスクの取得に失敗しました。'
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 
