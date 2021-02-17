@@ -1,23 +1,23 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { MongooseModule } from '@nestjs/mongoose';
-import { PassportModule } from '@nestjs/passport';
-import { AuthModule } from './auth/auth.module';
-import { TasksModule } from './tasks/tasks.module';
-import { UsersModule } from './users/users.module';
+import { Module } from '@nestjs/common'
+import { ConfigModule } from '@nestjs/config'
+import { AppController } from './app.controller'
+import { AppService } from './app.service'
+import { MongooseModule } from '@nestjs/mongoose'
+import { PassportModule } from '@nestjs/passport'
+import { AuthModule } from './auth/auth.module'
+import { TasksModule } from './tasks/tasks.module'
+import { UsersModule } from './users/users.module'
 import { CommentsModule } from './comments/comments.module'
-import { ProjectsModule } from './projects/projects.module';
+import { ProjectsModule } from './projects/projects.module'
 import { CategoriesModule } from './categories/categories.module'
-import { CounterModule } from './counters/counters.module';
+import { CounterModule } from './counters/counters.module'
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: '.development.env'
+      envFilePath: '.development.env',
     }),
-    PassportModule.register({ defaultStrategy: 'jwt '}),
+    PassportModule.register({ defaultStrategy: 'jwt ' }),
     TasksModule,
     UsersModule,
     CommentsModule,
@@ -25,7 +25,9 @@ import { CounterModule } from './counters/counters.module';
     CategoriesModule,
     AuthModule,
     CounterModule,
-    MongooseModule.forRoot(`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.hekpb.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`),
+    MongooseModule.forRoot(
+      `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.hekpb.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`
+    ),
   ],
   controllers: [AppController],
   providers: [AppService],

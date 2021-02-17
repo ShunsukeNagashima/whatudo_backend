@@ -1,16 +1,25 @@
-import { Controller, Get, Post, Delete, Body, Param, HttpCode, UseGuards } from '@nestjs/common';
-import { CategoriesService } from './categories.service';
+import {
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Body,
+  Param,
+  HttpCode,
+  UseGuards,
+} from '@nestjs/common'
+import { CategoriesService } from './categories.service'
 import { CreateCategoryDto } from './dto/categories.dto'
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 
 @Controller('/api/categories')
 @UseGuards(JwtAuthGuard)
 export class CategoriesController {
-  constructor(private categoryService: CategoriesService){}
+  constructor(private categoryService: CategoriesService) {}
 
   @Post()
   @HttpCode(201)
-  async createCategory(@Body() createCategoryDto: CreateCategoryDto){
+  async createCategory(@Body() createCategoryDto: CreateCategoryDto) {
     await this.categoryService.createCategory(createCategoryDto)
   }
 

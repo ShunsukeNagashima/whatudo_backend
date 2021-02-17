@@ -10,17 +10,17 @@ import {
   HttpException,
   HttpStatus,
   Req,
-  Query
- } from '@nestjs/common';
-import { CreateProjectDto } from './dto/projects.dto';
-import { ProjectsService } from './projects.service';
-import { UsersService } from '../users/users.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { JwtService } from '@nestjs/jwt';
+  Query,
+} from '@nestjs/common'
+import { CreateProjectDto } from './dto/projects.dto'
+import { ProjectsService } from './projects.service'
+import { UsersService } from '../users/users.service'
+import { JwtAuthGuard } from '../auth/jwt-auth.guard'
+import { JwtService } from '@nestjs/jwt'
 
-interface IUserInfo extends Request{
+interface IUserInfo extends Request {
   user: {
-    email: string,
+    email: string
     userId: string
   }
 }
@@ -36,10 +36,16 @@ export class ProjectsController {
 
   @Post()
   @HttpCode(201)
-  async createProject(@Req() req: IUserInfo, @Body() createProjectDto: CreateProjectDto) {
+  async createProject(
+    @Req() req: IUserInfo,
+    @Body() createProjectDto: CreateProjectDto
+  ) {
     const user = await this.usersService.findUserById(req.user.userId)
-    const project = await this.projectService.createProject(createProjectDto, user)
-    return { project, message: 'プロジェクトを作成しました。'}
+    const project = await this.projectService.createProject(
+      createProjectDto,
+      user
+    )
+    return { project, message: 'プロジェクトを作成しました。' }
   }
 
   @Get()
@@ -48,52 +54,67 @@ export class ProjectsController {
   }
 
   @Get('/invite/:projectId')
-  async createTokenForInviting(@Param('projectId') projectId: string, @Req() req: IUserInfo) {
+  async createTokenForInviting(
+    @Param('projectId') projectId: string,
+    @Req() req: IUserInfo
+  ) {
     try {
       const payLoad = {
         projectId,
-        userId: req.user.userId
+        userId: req.user.userId,
       }
       const options = {
         secret: process.env.JWT_KEY_FOR_INVITING,
-        expiresIn: '30m'
+        expiresIn: '30m',
       }
 
       const token = this.jwtService.sign(payLoad, options)
       return { invitationToken: token }
-    } catch(err) {
-      throw new HttpException({
-        message: 'トークンの作成に失敗しました。'
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+    } catch (err) {
+      throw new HttpException(
+        {
+          message: 'トークンの作成に失敗しました。',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR
+      )
     }
   }
 
   @Get('/addUser/:projectId')
-  async addUserTOProject(@Query('token') token: string,
-                         @Param('projectId') projectId: string,
-                         @Req() req: IUserInfo ) {
+  async addUserTOProject(
+    @Query('token') token: string,
+    @Param('projectId') projectId: string,
+    @Req() req: IUserInfo
+  ) {
     let result
     try {
-       result = this.jwtService.verify(token, { secret: process.env.JWT_KEY_FOR_INVITING })
-    } catch(err) {
-      throw new HttpException({
-        message: 'プロジェクトの認証に失敗しました。'
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+      result = this.jwtService.verify(token, {
+        secret: process.env.JWT_KEY_FOR_INVITING,
+      })
+    } catch (err) {
+      throw new HttpException(
+        {
+          message: 'プロジェクトの認証に失敗しました。',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR
+      )
     }
-    if(result) {
+    if (result) {
       const user = await this.usersService.findUserById(req.user.userId)
-      await this.projectService.addUserToProject(projectId, user);
+      await this.projectService.addUserToProject(projectId, user)
     } else {
-      throw new HttpException({
-        message: 'プロジェクトの参加に失敗しました。'
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+      throw new HttpException(
+        {
+          message: 'プロジェクトの参加に失敗しました。',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR
+      )
     }
-    return { message: 'プロジェクトに参加しました。'}
+    return { message: 'プロジェクトに参加しました。' }
   }
 
   @Delete('/:projectId')
   async deleteProject(@Param('id') id: string) {
     await this.projectService.deleteProject(id)
   }
-
 }

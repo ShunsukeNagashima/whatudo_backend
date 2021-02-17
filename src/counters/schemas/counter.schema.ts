@@ -1,19 +1,18 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
+import { Document } from 'mongoose'
 
-export type CounterDocument = Counter & Document;
+export type CounterDocument = Counter & Document
 
 @Schema()
 export class Counter {
+  @Prop()
+  key1: string
 
   @Prop()
-  key1: string;
+  key2: string
 
   @Prop()
-  key2: string;
-
-  @Prop()
-  seq: number;
+  seq: number
 }
 
 export const CounterSchema = SchemaFactory.createForClass(Counter)
