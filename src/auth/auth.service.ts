@@ -21,7 +21,7 @@ export class AuthService {
     } catch (err) {
       throw new HttpException(
         {
-          error: 'エラーが発生しました。もう一度お試しください。',
+          message: 'エラーが発生しました。もう一度お試しください。',
         },
         HttpStatus.INTERNAL_SERVER_ERROR
       )
