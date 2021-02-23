@@ -7,134 +7,132 @@ It is used for managing tasks.
 
 ### Show All Tasks in Project
 #### ・URL
-   /api/tasks
+　/api/tasks
   
 #### ・Method
-   GET
+　GET
   
 #### ・Query Params
-   Required:<br/>
-   projectId=[integer]
+　Required:<br/>
+　projectId=[integer]
   
 #### ・Data Params
-   None
+　None
   
 #### ・Success Response
-   Code： 200 <br/>
-   Content: { tasks: [{id: 1, title: task name ... etc.}], message: "Task Created!"}
+　Code： 200 <br/>
+　Content: { tasks: [{id: 1, title: task name ... etc.}], message: "Task Created!"}
 
-### ・Error Response
-   Code:401<br/>
-   Content: { message: 'Unauthorized' }
+#### ・Error Response
+　Code:401<br/>
+　Content: { message: 'Unauthorized' }
   
-   or
+　　or
   
-   Code: 500<br/>
-   Content: { message: 'Something went wrong, please try again.'}
+　Code: 500<br/>
+　Content: { message: 'Something went wrong, please try again.'}
   
 ### Create New Task
 #### ・URL
-　  /api/tasks
+　/api/tasks
  
 #### ・Method
-　  POST
+　POST
 
 #### ・Data Params
-    Required
-  <p>title=[string]</p>
-  <p>description=[string]</p>
-  <p>limitDate=[Date]</p>
-  <p>progress=[integer]</p>
-  <p>status=[string]</p>
-  <p>comments=[Array Of string]</p>
-  <p>creator=[string]</p>
-  <p>modfiedBy=[Array of string]</p>
-  <p>personInCharge=[string]</p>
-  <p>category=[string]</p>
-  <p>project=[string]</p>
-  <p>createdAt=[Date]</p>
-  <p>updatedAt=[Date]</p>
+　Required:<br/>
+ <ul>
+   <li>title=[string]</li>
+   <li>description=[string]</li>
+   <li>limitDate=[Date]</li>
+   <li>progress=[integer]</li>
+   <li>status=[string]</li>
+   <li>creator=[string]</li>
+   <li>personInCharge=[string]</li>
+   <li>category=[string]</li>
+ </ul>
   
 #### ・Success Response
-  Code： 200<br/>
-  Content: { tasks: [{id: 1, title: task name ... etc.}], message: "Update Success!"}
+　Code： 200<br/>
+　Content: { tasks: [{id: 1, title: task name ... etc.}], message: "Update Success!"}
 
 #### ・Error Response
-  Code:401<br/>
-  Content: { message: 'Unauthorized' }
+　Code:401<br/>
+　Content: { message: 'Unauthorized' }
   
-  or
+　　or
   
-  Code: 500<br/>
-  Content: { message: 'Something went wrong, please try again.'}
+　Code: 500<br/>
+　Content: { message: 'Something went wrong, please try again.'}
   
 #### ・Success Response
-  Code: 201<br/>
-  Content: { task: {id: 1, title: task name ... etc.}, message: "Created New Task"}
+　Code: 201<br/>
+　Content: { task: {id: 1, title: task name ... etc.}, message: "Created New Task"}
   
 #### ・Error Response
-  Code:401<br/>
-  Content: { message: 'Unauthorized' }
+　Code:401<br/>
+　Content: { message: 'Unauthorized' }
   
-  or
+　　or
   
-  Code: 500<br/>
-  Content: { message: 'Something went wrong, please try again.'}
+　Code: 500<br/>
+　Content: { message: 'Something went wrong, please try again.'}
 
 ### ・Update Task
 #### ・URL
-　 api/task/:taskId
+　api/task/:taskId
 
 #### ・Method
-   PATCH
+　PATCH
 
 #### ・Data Params
-  Required:<br/>
-  <p>title=[string]</p>
-  <p>description=[string]</p>
-  <p>limitDate=[Date]</p>
-  <p>status=[string]</p>
-  <p>progress=[integer]</p>
-  <p>comment=[{title=[string], description=[string]}</p>
-  <p>mmodfiedBy=[Array of string]</p>
-  <p>personInCharge=[string]</p>
-  <p>category=[string]</p>
+　Required:
+ <ul>
+   <li>title=[string]</li>
+   <li>description=[string]</li>
+   <li>limitDate=[Date]</li>
+   <li>progress=[integer]</li>
+   <li>status=[string]</li>
+   <li>comment=[{title=[string], description=[string]}</li>
+   <li>personInCharge=[string]</li>
+   <li>category=[string]</li>
+</ul>
 
 #### ・URL PARAMS
-　 taskId=[string]
+　taskId=[string]
 
 #### ・Query Params
-   perojectId=[string]
+　perojectId=[string]
 
 #### Request Header
-   user=[{ id=[string], name=[string], email=[string], project=Array }]
+　user=[{ id=[string], name=[string], email=[string], project=Array }]
     
 ### Delete Task
-   /api/task/:id
+　/api/task/:id
     
 #### ・Method
-   Delete
+　Delete
     
 #### ・URL PARAMS
-　 taskId=[string]
+　taskId=[string]
    
 #### ・Data Params
-   None
+　None
 
 #### ・Success Response
-   Code： 200<br/>
-   Content: { message: "Delete Task!"}
+　Code： 200<br/>
+　Content: { message: "Delete Task!"}
 
 #### ・Error Response
-   Code:401<br/>
-   Content: { message: 'Unauthorized' }
+　Code:401<br/>
+　Content: { message: 'Unauthorized' }
   
-   or
+　　or
   
-   Code: 500<br/>
-   Content: { message: 'Something went wrong, please try again.'}
+　Code: 500<br/>
+　Content: { message: 'Something went wrong, please try again.'}
   
-### Install
+## Install
 ```bash
 $ git clone https://github.com/ShunsukeNagashima/whatudo_backend.git
 $ cd whatudo_backend
@@ -142,8 +140,8 @@ $ npm install
 $ npm start
 ```
 By following these steps, you will be ready to send a request to this API!<br/>
-By default, it is listening to PORT8080.
+By default, it is listening to PORT5000.
 
-#### ・Author
+## ・Author
 　Shunsuke Nagashima<br/>
-  Twitter: https://twitter.com/shun_n_dr
+　Twitter: https://twitter.com/shun_n_dr
